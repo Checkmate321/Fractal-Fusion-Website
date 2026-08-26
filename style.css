@@ -761,8 +761,15 @@ a.card:hover{ transform:translateY(-2px) }
 
    The labels are one or two short words for the same reason. Lengthen one
    and it becomes the widest thing in its cell, and the row stops fitting. */
-.stats .statrow{ flex-wrap:nowrap; gap:var(--s2); align-items:start }
-.stats .statrow > div{ flex:0 1 auto; min-width:0 }
+.stats .statrow{
+  flex-wrap:nowrap;
+  gap:var(--s2);
+  align-items:start;
+  justify-content:center;
+}
+/* Centred within its own cell too, so each number sits over its label rather
+   than the pair sharing a left edge. */
+.stats .statrow > div{ flex:0 1 auto; min-width:0; text-align:center }
 .stats .statrow .label{ white-space:nowrap }
 .stats .stat{ font-size:clamp(1.05rem, 4.6vw, 3.2rem) }
 
@@ -973,7 +980,7 @@ a.card:hover{ transform:translateY(-2px) }
   grid-template-columns:repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
   align-items:start;
 }
-.split h2{ margin-bottom:var(--s3) }
+.split :is(h1,h2){ margin-bottom:var(--s3) }
 
 .cta-pair{
   display:grid; gap:var(--s5) var(--s4);
@@ -1187,6 +1194,43 @@ a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
 .rec tr:last-child td{ border-bottom:0 }
 .rec td.n{ font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap }
 .rec td:last-child{ color:var(--c1) }
+
+
+/* ==========================================================================
+   ROSTER
+   Three cards: the adults, the three subsystem leads, and everyone else. The
+   students are first name and last initial, which is the whole reason the
+   name and the role are separate elements rather than one string.
+
+   About's h1 lives in a band rather than a page head, so it is stepped down
+   to the h2 size. The outline still wants one h1 on the page; the column it
+   sits in does not want it three point sizes larger than its neighbours.
+   ========================================================================== */
+
+.band h1{ font-size:var(--t-h2) }
+
+.roster-intro h2{ margin:var(--s1) 0 var(--s2) }
+.roster{ margin-top:var(--s4) }
+.roster-card{ display:grid; align-content:start; gap:var(--s3) }
+
+.roster-list{ margin:0; padding:0; list-style:none; display:grid; gap:var(--s2) }
+.roster-list li{ display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s1) var(--s2) }
+.roster-name{ font-weight:700 }
+.roster-role{
+  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--c1);
+}
+
+.roster-dl{ margin:0; display:grid; gap:var(--s1) }
+.roster-dl dt{
+  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--c1);
+  margin-top:var(--s2);
+}
+.roster-dl dt:first-of-type{ margin-top:0 }
+.roster-dl dd{ margin:0 }
+
+.roster + .note-line{ margin-top:var(--s4) }
 
 
 /* ==========================================================================
