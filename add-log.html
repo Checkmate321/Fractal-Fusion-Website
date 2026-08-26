@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Add a log entry | Fractal Fusion, FTC 27188</title>
+<meta name="description" content="Internal form for Fractal Fusion team members to submit a build log entry.">
+
+<!-- Unlisted. Not in the nav, not in the sitemap, and asked not to be indexed. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="icon" href="/files/logos/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+
+<body data-page="none">
+
+<div id="header"></div>
+
+<main>
+
+  <section class="page-head">
+    <div class="wrap">
+      <span class="label">Team only</span>
+      <h1>Add a log entry</h1>
+      <div class="rule"></div>
+      <p class="lede">Three sentences is a perfectly good entry. One written tonight
+         beats a detailed one reconstructed in February.</p>
+    </div>
+  </section>
+
+  <section class="band band--light">
+    <div class="wrap">
+      <div class="split">
+
+        <div class="measure">
+          <span class="label">How this works</span>
+          <h2>You fill it in, someone moves it across</h2>
+          <p>This goes straight to a team inbox as an email, already formatted for the
+             site. Nothing you write here appears publicly until someone puts it in the
+             repo, so a rough entry is fine.</p>
+          <p>No account, no sign in, nothing to install.</p>
+
+          <h3 class="mt">On photos</h3>
+          <p>This form cannot take image uploads, so send photos to the team chat or drop
+             them in the team Drive folder, then describe them below so we know which
+             entry they belong to.</p>
+
+          <h3 class="mt">What makes a good entry</h3>
+          <ul class="cost-list">
+            <li><strong>Put the result in the summary.</strong> "Cycle time down 0.6 seconds" beats "we worked on the intake".</li>
+            <li><strong>Numbers beat adjectives.</strong> "One jam in thirty cycles" says more than "much better".</li>
+            <li><strong>Write down what failed.</strong> That is the part other teams actually learn from, and the part judges ask about.</li>
+          </ul>
+        </div>
+
+        <form class="form" data-web3form data-compose="log" novalidate>
+          <input type="hidden" name="access_key" value="d6e491da-c962-41bf-93e9-3d3e856ada85">
+          <input type="hidden" name="subject" value="Build log entry">
+          <input type="hidden" name="from_name" value="Fractal Fusion add-log">
+          <input type="hidden" name="message" value="">
+          <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" autocomplete="off">
+
+          <div class="field">
+            <label for="l-date">Date</label>
+            <input id="l-date" name="date" type="date" required>
+            <span class="hint">The day the work happened, not today.</span>
+          </div>
+
+          <div class="field">
+            <label for="l-title">Title</label>
+            <input id="l-title" name="title" type="text" required maxlength="80">
+            <span class="hint">Short, it sits on a card. "Intake v3, compliant wheels".</span>
+          </div>
+
+          <div class="field">
+            <label for="l-topic">Topic</label>
+            <select id="l-topic" name="topic" required>
+              <option value="CAD">CAD</option>
+              <option value="Mechanical">Mechanical</option>
+              <option value="Misc">Misc</option>
+              <option value="Outreach">Outreach</option>
+              <option value="Software">Software</option>
+              <option value="Strategy">Strategy</option>
+            </select>
+            <span class="hint">Misc exists so you never stall on this.</span>
+          </div>
+
+          <div class="field">
+            <label for="l-summary">One sentence summary</label>
+            <input id="l-summary" name="summary" type="text" required maxlength="160">
+            <span class="hint">This is all most people read. Put the result in it.</span>
+          </div>
+
+          <div class="field">
+            <label for="l-body">What happened</label>
+            <textarea id="l-body" name="body" rows="9" required></textarea>
+            <span class="hint">What you tried, what happened, what you changed. Leave a blank line between paragraphs.</span>
+          </div>
+
+          <div class="field">
+            <label for="l-photos">Photos <span class="opt">optional</span></label>
+            <textarea id="l-photos" name="photos" rows="2"></textarea>
+            <span class="hint">Where they are and what they show. One per line.</span>
+          </div>
+
+          <div class="field">
+            <label for="l-name">Your name</label>
+            <input id="l-name" name="author" type="text" required autocomplete="name">
+          </div>
+
+          <button class="btn btn--accent" type="submit">Send it</button>
+          <p class="form-status label" role="status" aria-live="polite"></p>
+
+          <div class="json-out" hidden>
+            <div class="json-head">
+              <span class="label">Ready for data/log.json</span>
+              <button class="btn json-copy" type="button">Copy</button>
+            </div>
+            <pre class="json-body"><code></code></pre>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="footer"></div>
+
+<script src="/main.js"></script>
+</body>
+</html>

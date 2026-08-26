@@ -1,37 +1,23 @@
-# Chunk 3: the log intake pipeline
+# The log intake pipeline
 
 Anyone on the team fills in a form. One person moves it into the repo. That is
-the whole system.
+the whole system, and nobody except the transcriber ever touches JSON.
 
-The point is that nobody except the transcriber ever has to touch JSON, and the
-transcriber never has to invent anything, because the form asks for exactly the
-fields the file needs and in the same order.
+There are two ways to run the form. **Use the first one.**
 
 ---
 
-## Part 0. Build the form automatically
+## Option A, the page on our own site (recommended)
 
-`google-form-setup.gs` in this repo creates the entire form in one run. Use this
-rather than building it by hand.
+<https://fractalfusion.team/add-log.html>
 
-1. Sign in to the Google account that should **own** the form.
-2. Go to <https://script.google.com> and click **New project**.
-3. Delete whatever is in the editor and paste in all of `google-form-setup.gs`.
-4. Save. Choose `createLogForm` from the function dropdown. Click **Run**.
-5. Approve the permissions prompt. It will warn that the app is not verified,
-   because it is your own script. Click **Advanced**, then **Go to project**.
-6. The **Execution log** prints three links. Keep all three:
-   * the form to fill in, which goes in the team group chat, pinned
-   * the form editor, for changing questions later
-   * the responses spreadsheet
+No Google account, no sign in, no permissions prompt, nothing to install. It is
+not linked from the nav, it is marked `noindex, nofollow`, it is excluded from
+the sitemap and disallowed in `robots.txt`. Share the link in the team chat.
 
-Run it once. Running it again makes a second form.
-
-### What you also get
-
-The script installs a trigger, so **every submission emails
-`nathan.lamchamkee@gmail.com` with the entry already written as the object that
-goes into `data/log.json`.** Transcribing becomes copy and paste:
+Submitting emails the team inbox with the entry **already written as the object
+that goes into `data/log.json`**, and shows the same JSON on the page with a
+Copy button, so whoever fills it in can hand it over directly.
 
 ```json
 {
@@ -48,29 +34,55 @@ goes into `data/log.json`.** Transcribing becomes copy and paste:
 }
 ```
 
-The date is converted to `YYYY-MM-DD`, the id is generated from the date and
-title, and the long answer is split into one array item per paragraph. If photos
-were attached, the email lists their Drive links and the folder to put them in.
+The date comes through as `YYYY-MM-DD` from the date picker, the id is built
+from the date and title, and the long answer is split into one array item per
+paragraph.
 
-To send notifications somewhere else, change `NOTIFY` at the top of the script.
+**It cannot take image uploads**, because that needs a paid Web3Forms plan.
+Photos go to the team chat or the team Drive folder, and the form has a field
+for describing which entry they belong to.
 
-**One caveat.** File upload questions are not available on every kind of Google
-account. If yours cannot use them the script does not fail: it adds a "Photo
-links" paragraph question instead and notes it in the execution log. In that
-case, photos go in the team Drive folder and people paste the links.
+**Unlisted is not private.** Anyone with the link can submit. It only sends
+email, so the worst case is junk in the inbox, and there is a honeypot field to
+catch bots. Do not treat the URL as a secret.
+
+To change where it sends, replace the `access_key` in `add-log.html` with a
+different Web3Forms key.
 
 ---
 
-## Part 1. What the form contains
+## Option B, a real Google Form
 
-Built automatically by the script above. This section is the reference, and what
-to rebuild by hand if you ever need to.
+Use this only if you specifically want Google's file upload question, so photos
+arrive attached rather than described. The cost is that whoever runs the setup
+script has to click through an unverified app permissions prompt, which is what
+Option A avoids.
 
-The form is called **Fractal Fusion, build log entry**. Email collection is on,
-and one response per user is off.
+`google-form-setup.gs` builds the whole form in one run.
 
-The questions, in this order. The field name in brackets is the key it
-maps to in `data/log.json`.
+1. Sign in to the Google account that should **own** the form.
+2. Go to <https://script.google.com> and click **New project**.
+3. Delete whatever is in the editor and paste in all of `google-form-setup.gs`.
+4. Save. Choose `createLogForm` from the function dropdown. Click **Run**.
+5. Approve the permissions prompt. It warns the app is not verified because it
+   is your own script. **Advanced**, then **Go to project**.
+6. The **Execution log** prints the form link, the editor link and the responses
+   spreadsheet link.
+
+Run it once. Running it again makes a second form.
+
+It installs the same kind of submit trigger, emailing the composed JSON to the
+address in `NOTIFY` at the top of the script.
+
+If the account cannot use file upload questions, the script does not fail. It
+adds a "Photo links" paragraph question instead and says so in the log, which
+makes it equivalent to Option A but with extra steps.
+
+---
+
+## The questions
+
+Both options ask the same seven things, in this order.
 
 ### 1. Date [date]
 * Type: **Date**

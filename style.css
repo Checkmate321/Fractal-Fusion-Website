@@ -355,10 +355,11 @@ a.card:hover{ transform:translateY(-2px) }
 
 /* ==========================================================================
    SITE FOOTER
-   Two rows: identity beside socials, then a thin legal line.
+   One row that wraps: brand, legal and contact strip, marks. No divider and
+   no second row, so the whole thing is one line tall wherever it fits.
    ========================================================================== */
 
-.site-foot{ background:var(--dark); color:var(--light); padding-block:var(--s5) var(--s4) }
+.site-foot{ background:var(--dark); color:var(--light); padding-block:var(--s3) }
 .site-foot a{ color:var(--mute); text-decoration:none }
 .site-foot a:hover{ color:var(--c1) }
 
@@ -370,13 +371,32 @@ a.card:hover{ transform:translateY(-2px) }
 .site-foot .brand:hover span{ color:var(--c1) }
 .site-foot .brand:hover em  { color:var(--light) }
 
-.foot-top{
-  border-top:1px solid var(--hair);
-  padding-top:var(--s4);
-  display:flex; flex-wrap:wrap;
-  gap:var(--s3) var(--s5);
-  align-items:center; justify-content:space-between;
+/* Brand left, marks right, strip between. space-between does that on one line
+   and stacks the three in source order when the line runs out. */
+.site-foot .wrap{
+  display:flex; flex-wrap:wrap; align-items:center;
+  justify-content:space-between;
+  gap:var(--s2) var(--s3);
 }
+
+/* Held on one line as far down as the type can legibly go. The font size is
+   the one place on the page that does not sit on a --t token: this strip has
+   to carry three fixed strings side by side, so it keys off the viewport
+   instead, bottoming out at the floor for legible mono. Once it has a line to
+   itself it centres, which is also where it starts wrapping internally. */
+.foot-legal{
+  /* Grows into whatever the brand and the marks leave, so on one line it sits
+     centred between them, and as the line tightens it gives up its own width
+     first, wrapping internally rather than shoving the marks onto a new row.
+     min-width stays auto on purpose: the items are nowrap, so the longest of
+     them is the floor past which it has to break instead of overflow. */
+  flex:1 1 12rem;
+  display:flex; flex-wrap:wrap; justify-content:center;
+  gap:var(--s1) var(--s3);
+  font-family:var(--mono); font-size:clamp(.58rem, 1.1vw, .6875rem);
+  letter-spacing:.09em; text-transform:uppercase; color:var(--mute);
+}
+.foot-legal > *{ white-space:nowrap }
 
 /* Brand marks, not words. Every link is a --hit box, finger sized, holding a
    quiet --mark glyph. Each one paints its mark as a mask filled with
@@ -416,23 +436,10 @@ a.card:hover{ transform:translateY(-2px) }
    that would break the rhythm, so the glyph itself grows instead. */
 .soc--ftcscout::before{ --mark:1.625rem }
 
-/* Pull back the first box's slack so the leading mark, not the empty half of
-   its target, lines up with the text edge once the row wraps to its own line. */
+/* Pull back the first and last boxes' slack so the marks, not the empty half
+   of their targets, line up with the wrap edges. */
 .foot-social .soc:first-child{ margin-left:calc((var(--mark) - var(--hit)) / 2) }
-
-/* Centred, and held on one line as far down as the type can legibly go. The
-   font size is the one place on the page that does not sit on a --t token:
-   this row has to carry three fixed strings side by side, so it keys off the
-   viewport instead, bottoming out at the floor for legible mono. Below that
-   it wraps to two centred lines rather than shrinking further. */
-.foot-bot{
-  margin-top:var(--s4);
-  display:flex; flex-wrap:wrap; justify-content:center;
-  gap:var(--s2) var(--s3);
-  font-family:var(--mono); font-size:clamp(.58rem, 1.55vw, .6875rem);
-  letter-spacing:.09em; text-transform:uppercase; color:var(--mute);
-}
-.foot-bot > *{ white-space:nowrap }
+.foot-social .soc:last-child{ margin-right:calc((var(--mark) - var(--hit)) / 2) }
 
 
 /* ==========================================================================
@@ -462,84 +469,43 @@ a.card:hover{ transform:translateY(-2px) }
    --s7 under the stats was breathing room for a slab that is no longer there. */
 .hero{
   background:var(--light); color:var(--dark);
-  padding-block:var(--s6) var(--s5);
+  padding-block:var(--s4) var(--s3);
   border-bottom:1px solid var(--hair);
-  /* The robot is pulled past the wrap and out to the window edge. Clipping here
-     is what makes that a crop rather than a horizontal scrollbar, and it also
-     absorbs the few pixels 100vw overshoots by on desktop, where 100vw counts
-     the scrollbar and the page does not. */
-  overflow:hidden;
 }
-/* Stacked is the base case: copy, then robot, then stats, each on its own row.
-   The side by side arrangement is switched on further down, and it is the one
-   place in this file that needs a real width query. The two arrangements are
-   not the same layout at different sizes, they are different layouts: stacked
-   centres the robot, side by side hangs it off the right edge. A fluid value
-   cannot be centred and off centre at once, so a clamp cannot express it. */
+/* Copy and robot sit side by side, and wrap the way the nav does rather than at
+   a breakpoint. The copy's 24rem basis plus the stage's 34rem and a column gap
+   means the two stop fitting somewhere under ~60rem of wrap, and the stage
+   drops to a row of its own, on its own, at whatever width the type needs.
+
+   The bases are what split the row, so the robot is given the larger share of
+   it. The h1 is capped at 15ch and the lede at 46ch regardless, so the copy
+   column being narrower costs the type nothing: it was never using the width. */
 .hero .wrap{
   display:flex; flex-wrap:wrap; align-items:center;
-  gap:var(--s5) var(--s4);
+  gap:var(--s4) var(--s3);
 }
-.hero-copy{ flex:1 1 100%; min-width:0 }
+.hero-copy{ flex:1 1 24rem; min-width:0 }
 .statrow{ flex:1 1 100% }
 
-.hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s3) }
-.hero .lede{ margin-top:var(--s3); max-width:46ch }
-.hero-actions{ display:flex; flex-wrap:wrap; gap:var(--s2); margin-top:var(--s4) }
+.hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s2) }
+.hero .lede{ margin-top:var(--s2); max-width:46ch }
+.hero-actions{ display:flex; flex-wrap:wrap; gap:var(--s2); margin-top:var(--s3) }
 
-/* The robot runs off the right edge, as in the reference. margin-right pulls the
-   stage out of the wrap's gutter and across the leftover viewport, so the model
-   is cropped by the window rather than boxed by the layout. The max() floor
-   keeps the pull at zero once the viewport is narrower than --wrap and there is
-   no leftover to cross.
+/* Whole, never cropped, and the same rule at every width. Beside the copy it
+   takes its share of the row; once the row can no longer hold both it is the
+   only thing on its line, spans it, and the viewer centres the model inside its
+   own box, so the robot lands in the middle of the screen without anything here
+   having to know which of the two is happening.
 
-   The stage is square and sized in vh as well as vw: it is a hero ornament, and
-   on a short laptop it has to stay inside the fold with the h1, not push the
-   stats off screen. Empty until main.js decides to build it, so height is
-   reserved here and nothing shifts when the model lands. */
-/* Stacked: a full width row of its own, centred, and short enough that it does
-   not push the stats out of the fold on a phone. */
+   Square, and sized against viewport height as well as width: it is a hero
+   ornament, and on a short laptop it has to stay in the fold with the h1 rather
+   than push the stats off screen. The height is reserved before the model
+   arrives, so nothing shifts when it does. */
 .hero-stage{
-  flex:1 1 100%;
+  flex:1 1 34rem;
   min-width:0;
   aspect-ratio:1;
-  max-width:26rem;
-  max-height:clamp(16rem, 60vw, 26rem);
-  margin-inline:auto;
-}
-
-/* The one width query in this stylesheet. Everything else here is fluid, and
-   this is not a size, it is a switch between two arrangements. It is also
-   authoritative rather than advisory: the bases above and below are absolute,
-   so the row never wraps on its own somewhere near the threshold and leaves the
-   robot half bled and half centred. Change this number and nothing else has to
-   be kept in step with it. */
-@media (min-width:62rem){
-
-  .hero-copy{ flex:1 1 30rem }
-
-  .hero-stage{
-    flex:1 1 26rem;
-    max-width:none;
-    max-height:clamp(20rem, 30vw + 14vh, 38rem);
-    margin-inline:0;
-
-    /* Hang the robot off the right edge until about half of it is gone. Four
-       terms: cross the empty space beside the wrap, then the wrap's own gutter,
-       which together land the stage's right edge exactly on the window's, then
-       one more that is the crop itself. Only the third term hides anything, so
-       it tracks the viewport: the stage grows with the window and a flat value
-       would cut away less and less of it. The stage is
-       what gets cropped, because a model-viewer clips to its own box and the
-       model cannot spill out of it, so the stage has to leave the screen for
-       the robot to. .hero clips the overflow, which is what keeps this a crop
-       rather than a horizontal scrollbar. */
-    margin-right:calc(
-      -1 * max(0px, (100vw - var(--wrap)) / 2)
-      - clamp(1rem, 4vw, 2rem)
-      - clamp(10rem, 20vw, 26rem)
-    );
-  }
+  max-height:clamp(18rem, 34vw + 16vh, 44rem);
 }
 
 /* Fills the stage, transparent so the hero ground shows through, and never a
@@ -564,7 +530,7 @@ a.card:hover{ transform:translateY(-2px) }
   display:grid;
   gap:var(--s4);
   grid-template-columns:repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
-  margin-top:var(--s6);
+  margin-top:var(--s3);
 }
 .statrow .label{ margin-top:var(--s2) }
 
@@ -961,6 +927,37 @@ a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
 .field select:focus-visible{ outline:2px solid var(--c1); outline-offset:1px; border-color:transparent }
 /* The dropdown list itself is painted by the OS, so it needs real colours. */
 .field select option{ background:var(--light); color:var(--dark) }
+
+
+/* ==========================================================================
+   ADD LOG
+   ========================================================================== */
+
+.hint{ font-size:var(--t-small); color:var(--mute); line-height:1.4 }
+.mt{ margin-top:var(--s4) }
+
+.json-out{
+  border:1px solid var(--hair);
+  border-radius:var(--radius);
+  padding:var(--s3);
+}
+.json-head{
+  display:flex; flex-wrap:wrap; align-items:center;
+  gap:var(--s2); justify-content:space-between;
+  margin-bottom:var(--s2);
+}
+.json-copy{ padding:.5rem .9rem; font-size:var(--t-label) }
+
+/* Long ids and sentences must scroll here rather than widen the page. */
+.json-body{
+  margin:0;
+  overflow-x:auto;
+  font-family:var(--mono);
+  font-size:var(--t-small);
+  line-height:1.5;
+  white-space:pre;
+  tab-size:2;
+}
 
 
 /* ==========================================================================

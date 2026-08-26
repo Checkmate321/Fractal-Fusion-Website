@@ -437,6 +437,110 @@ renderResources();
    FORMS, posted to Web3Forms so the visitor never leaves the site
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   ADD LOG, composes the entry so transcribing is copy and paste
+   -------------------------------------------------------------------------- */
+
+/* Mirrors the id format used throughout data/log.json. */
+function slugify(title) {
+  var parts = String(title).toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 4);
+  return parts.length ? parts.join('-') : 'entry';
+}
+
+/* Blank line separated text becomes one array item per paragraph, because
+   JSON strings cannot hold a line break. */
+function toParagraphs(text) {
+  return String(text).split(/\n\s*\n/)
+    .map(function (p) { return p.replace(/\s+/g, ' ').trim(); })
+    .filter(Boolean);
+}
+
+function buildLogEntry(form) {
+  var get = function (n) {
+    var el = form.querySelector('[name="' + n + '"]');
+    return el ? el.value.trim() : '';
+  };
+
+  var date  = get('date');
+  var title = get('title');
+  var body  = toParagraphs(get('body'));
+
+  return {
+    id: (date || 'undated') + '-' + slugify(title),
+    date: date,
+    topic: get('topic') || 'Misc',
+    title: title,
+    summary: get('summary'),
+    body: body.length ? body : [''],
+    images: []
+  };
+}
+
+/* Writes the composed entry into the fields Web3Forms actually sends. */
+function composeLogEntry(form) {
+  var entry = buildLogEntry(form);
+  var json  = JSON.stringify(entry, null, 2);
+
+  var photos = form.querySelector('[name="photos"]');
+  var author = form.querySelector('[name="author"]');
+
+  var lines = [
+    'New build log entry from ' + ((author && author.value.trim()) || 'someone') + '.',
+    '',
+    'Paste this at the END of the list in data/log.json.',
+    'Remember the comma after the entry above it.',
+    '',
+    json,
+    ''
+  ];
+
+  if (photos && photos.value.trim()) {
+    lines.push('Photos, put them in files/log/' + entry.id + '/ then add one');
+    lines.push('{ "src": ..., "caption": "" } per photo to images:');
+    lines.push('');
+    lines.push(photos.value.trim());
+  } else {
+    lines.push('No photos, so images stays [].');
+  }
+
+  var msg = form.querySelector('[name="message"]');
+  if (msg) msg.value = lines.join('\n');
+
+  var subj = form.querySelector('[name="subject"]');
+  if (subj) subj.value = 'Build log: ' + (entry.title || 'untitled');
+
+  return json;
+}
+
+/* Show the JSON on the page too, so whoever fills it in can copy it directly
+   without waiting for the email to arrive. */
+function showLogJson(form, json) {
+  var out = form.querySelector('.json-out');
+  if (!out) return;
+
+  out.querySelector('code').textContent = json;
+  out.hidden = false;
+
+  var btn = out.querySelector('.json-copy');
+  if (btn && !btn.dataset.wired) {
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', function () {
+      navigator.clipboard.writeText(json).then(function () {
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+      }).catch(function () {
+        btn.textContent = 'Select it manually';
+      });
+    });
+  }
+}
+
+
 function initForms() {
   document.querySelectorAll('form[data-web3form]').forEach(function (form) {
     form.addEventListener('submit', function (ev) {
@@ -444,7 +548,11 @@ function initForms() {
 
       var status = form.querySelector('.form-status');
       var btn    = form.querySelector('button[type="submit"]');
-      var data   = {};
+
+      /* Compose before serialising, so the assembled JSON is in the payload. */
+      var composed = (form.dataset.compose === 'log') ? composeLogEntry(form) : null;
+
+      var data = {};
       new FormData(form).forEach(function (v, k) { data[k] = v; });
 
       if (btn) btn.disabled = true;
@@ -458,8 +566,13 @@ function initForms() {
         .then(function (res) { return res.json(); })
         .then(function (out) {
           if (!out.success) throw new Error(out.message || 'Web3Forms rejected the submission');
-          form.reset();
-          if (status) status.textContent = 'Thank you. We will reply to that address within a couple of days.';
+          if (composed) {
+            showLogJson(form, composed);
+            if (status) status.textContent = 'Sent. It will appear on the site once someone moves it across.';
+          } else {
+            form.reset();
+            if (status) status.textContent = 'Thank you. We will reply to that address within a couple of days.';
+          }
           form.classList.add('is-sent');
         })
         .catch(function (err) {
@@ -542,7 +655,7 @@ function buildRobot(stage) {
      quarter view: round the front, slightly above. The radius sits under 100%
      so the robot fills its stage instead of floating in the middle of it. */
   mv.setAttribute('field-of-view', '24deg');
-  mv.setAttribute('camera-orbit', '35deg 72deg 80%');
+  mv.setAttribute('camera-orbit', '35deg 72deg 86%');
   mv.setAttribute('min-camera-orbit', 'auto 55deg auto');
   mv.setAttribute('max-camera-orbit', 'auto 88deg auto');
 

@@ -28,6 +28,7 @@ Then open <http://localhost:8000>.
 index.html  log.html  entry.html          the pages
 resources.html  sponsors.html
 partners.html  about.html  404.html
+add-log.html                              unlisted, team only
 sitemap.xml  robots.txt
 
 header.html  footer.html                  injected into every page by main.js
@@ -87,17 +88,11 @@ well. Layouts collapse on their own:
   longer room beside the wordmark
 * grids use `repeat(auto-fit, minmax(min(100%, X), 1fr))`, so columns wrap and
   never force the page wider than the viewport
+* the hero carries `flex: 1 1 30rem` on its copy and `flex: 1 1 28rem` on the
+  robot, so the robot sits beside the copy while both fit and drops to a centred
+  row of its own when they do not
 
-There is **one** width query, at `62rem`, and it is the hero's only. It is not a
-size adjustment, it is a switch between two different arrangements: below it the
-robot is a centred row of its own under the copy, above it the robot hangs off
-the right edge of the window. A fluid value cannot be centred and off centre at
-the same time, so no clamp expresses this. It is written to be authoritative
-rather than advisory, meaning the flex bases either side are absolute and the
-row cannot wrap on its own near the threshold and leave the robot half bled and
-half centred. Change the number and nothing else needs to be kept in step.
-
-The other `@media` rule in the file is `prefers-reduced-motion`, which is a user
+The only `@media` rule in the file is `prefers-reduced-motion`, which is a user
 setting rather than a breakpoint.
 
 ### Nav
@@ -169,7 +164,12 @@ phone pays the full download. Declined, the stage stays empty, `:empty` removes
 it, and the hero is exactly the layout it was before the robot existed. Nothing
 on the page waits on any of it.
 
-## Adding a log entry
+## Adding a log entry, the easy way
+
+Send people to **`/add-log.html`**. It is unlisted, needs no account, and emails
+the entry already formatted as the JSON object. See `GOOGLE-FORM.md`.
+
+## Adding a log entry by hand
 
 See [ADDING-A-LOG-ENTRY.md](ADDING-A-LOG-ENTRY.md). One object appended to
 `data/log.json` produces a card, an entry page and a filter count. No HTML is
@@ -198,7 +198,7 @@ All eight chunks are done.
 
 1. Foundation: structure, tokens, header and footer, page shells
 2. Mission log: `data/log.json`, card grid, filters, entry pages
-3. Intake pipeline: run `google-form-setup.gs`, see `GOOGLE-FORM.md`
+3. Intake pipeline: `add-log.html`, see `GOOGLE-FORM.md`
 4. Landing page
 5. Sponsors
 6. Partners
