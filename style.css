@@ -755,15 +755,20 @@ a.card:hover{ transform:translateY(-2px) }
 
 /* The home page strip holds its three numbers on one line at every width,
    down to a 320px phone. Three things make that fit, and all three are
-   needed: cells sized by their contents rather than in equal thirds, a
-   tighter gap, and a stat size whose lower bound is small enough that the
-   countdown, much the widest of the three, still clears its neighbours.
+   needed: cells sized by their contents rather than in equal thirds, a gap
+   that gives back its space as the screen narrows, and a stat size whose
+   lower bound is small enough that the countdown, much the widest of the
+   three, still clears its neighbours.
 
    The labels are one or two short words for the same reason. Lengthen one
    and it becomes the widest thing in its cell, and the row stops fitting. */
 .stats .statrow{
   flex-wrap:nowrap;
-  gap:var(--s2);
+  /* Wide enough on a laptop that the three read as separate figures, and
+     wound back on a phone to whatever is left once the numbers have taken
+     their width. 4.2vw is the most a 320px screen can give and still hold
+     the row on one line. */
+  gap:clamp(0.85rem, 4.2vw, 3.25rem);
   align-items:start;
   justify-content:center;
 }
@@ -1401,6 +1406,24 @@ a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
   .site-foot .foot-social{
     --hit  : clamp(1.9rem, 9.4vw, 2.75rem);
     --mark : clamp(1.05rem, 5.2vw, 1.375rem);
+  }
+
+  /* The strip on one line, which is what it takes. Measured at the size above:
+     the three items need 429px and an SE offers 343, so roughly a fifth has to
+     come out. It comes out of three places at once rather than all out of the
+     type: the gap between the items drops a step, the tracking loosens less,
+     and the size scales with the viewport instead of sitting on its floor.
+
+     This does go under the floor the base rule calls legible mono, knowingly.
+     It is 7.5px on an SE and 6.4px at 320. Nothing here is meant to be read at
+     a glance, it is a copyright notice and two contact strings that are also
+     links, and the address and number are both reachable from the marks above
+     at full size. If it ever reads as too small, this block is the one to
+     loosen, and the strip goes back to wrapping onto two lines. */
+  .site-foot .foot-legal{
+    font-size:clamp(.4rem, 2vw, .58rem);   /* .58rem is what the base rule gives here, so the two meet at the query edge rather than stepping */
+    letter-spacing:.06em;
+    column-gap:var(--s2);
   }
 }
 
