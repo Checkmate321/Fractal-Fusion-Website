@@ -486,7 +486,6 @@ function composeLogEntry(form) {
   var entry = buildLogEntry(form);
   var json  = JSON.stringify(entry, null, 2);
 
-  var photos = form.querySelector('[name="photos"]');
   var author = form.querySelector('[name="author"]');
 
   var lines = [
@@ -499,21 +498,17 @@ function composeLogEntry(form) {
     ''
   ];
 
-  if (photos && photos.value.trim()) {
-    /* The folder lives in the markup so the link still works without JS.
-       Read it back from there rather than keeping a second copy here. */
-    var folder = document.getElementById('photo-folder');
+  /* The folder lives in the markup so the link still works without JS.
+     Read it back from there rather than keeping a second copy here. */
+  var folder = document.getElementById('photo-folder');
 
-    lines.push('Photos described:');
-    lines.push('');
-    lines.push(photos.value.trim());
-    lines.push('');
-    if (folder) lines.push('Shared folder: ' + folder.href);
-    lines.push('Download them into files/log/' + entry.id + '/, rename 01, 02,');
-    lines.push('then add one { "src": ..., "caption": "" } per photo to images.');
-  } else {
-    lines.push('No photos, so images stays [].');
-  }
+  lines.push('If there are photos for this one they will be in the shared folder,');
+  lines.push('named with the date.');
+  if (folder) lines.push(folder.href);
+  lines.push('');
+  lines.push('Download them into files/log/' + entry.id + '/, rename 01, 02, then');
+  lines.push('add one { "src": ..., "caption": "" } per photo to images.');
+  lines.push('If there are none, images stays [].');
 
   var msg = form.querySelector('[name="message"]');
   if (msg) msg.value = lines.join('\n');

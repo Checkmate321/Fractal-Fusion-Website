@@ -43,8 +43,10 @@ Photos go in the shared Drive folder instead, which the page links to directly:
 
 <https://drive.google.com/drive/folders/1cJLtyvKgX_VOBTnc9yhG80O-y_sLMR4x?usp=sharing>
 
-The form has a field for describing them, and the email includes the folder link
-alongside the `files/log/<id>/` path they need to end up in.
+Start the filename with the date, like `2026-09-14-intake`, so photos can be
+matched to the right entry later. Every submission email carries the folder link
+alongside the `files/log/<id>/` path they need to end up in, so no separate
+description is needed.
 
 To change the folder, edit the `href` on the `#photo-folder` button in
 `add-log.html`. The email reads the link back out of that markup, so there is
@@ -90,7 +92,11 @@ makes it equivalent to Option A but with extra steps.
 
 ## The questions
 
-Both options ask the same seven things, in this order.
+Option A asks six things: date, title, topic, summary, what happened, and your
+name. Photos are handled by the shared Drive folder rather than a field.
+
+Option B asks the same six plus a photo upload question, since Google can take
+the files directly. The full reference for both follows.
 
 ### 1. Date [date]
 * Type: **Date**

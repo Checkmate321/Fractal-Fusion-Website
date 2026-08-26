@@ -50,8 +50,15 @@
   /* ---- LAYOUT ---------------------------------------------------------- */
   --wrap      : 1140px;
   --wrap-text : 68ch;
-  --radius    : 4px;
-  --header-h  : clamp(76px, 7vh + 3rem, 98px);
+  --radius    : 4px;    /* controls: inputs, select, filter buttons     */
+  --radius-lg : 1rem;   /* cards and tiles, matched to the button's     */
+                        /* two live corners, which are also 1rem        */
+  /* The mark is square, so this is its height too, and the bar is only ever as
+     tall as the mark plus its padding and the butter rule. Deriving one from
+     the other means the height #header reserves before the fetch lands is
+     always the height the bar turns out to be, so the page never shifts. */
+  --logo-h    : clamp(48px, 5.2vw, 64px);
+  --header-h  : calc(var(--logo-h) + 2 * var(--s1) + 2px);
 }
 
 
@@ -172,7 +179,7 @@ a{ color:inherit }
    ========================================================================== */
 
 .card{
-  border-radius:var(--radius);
+  border-radius:var(--radius-lg);
   padding:var(--s3);
   display:block;
   text-decoration:none;
@@ -301,7 +308,7 @@ a.card:hover{ transform:translateY(-2px) }
   background:var(--dark); color:var(--light);
   min-height:var(--header-h);
   display:flex; align-items:center;
-  padding-block:var(--s2);
+  padding-block:var(--s1);
   /* A butter hairline closes the bar off. Navy over a light page separates
      on its own, but over a navy section the two grounds merge, and this rule
      is the only thing that draws the edge there. Butter reads on navy either
@@ -310,20 +317,16 @@ a.card:hover{ transform:translateY(-2px) }
 }
 .site-head .wrap{
   display:flex; align-items:center; flex-wrap:wrap;
-  gap:var(--s2) var(--s3);
+  gap:var(--s1) var(--s3);   /* the row gap only bites once the nav wraps */
 }
 
 .brand{ display:flex; align-items:center; gap:.625rem; text-decoration:none; color:var(--light); flex:0 0 auto }
 .brand img{ width:clamp(32px, 3.4vw, 40px); height:auto; transition:transform .3s ease }
 .brand:hover img{ transform:rotate(12deg) }
 
-/* The bar carries the mark alone now, so it can afford to be bigger. Capped at
-   64px because 64 plus the bar's padding and its bottom rule is 98px, the
-   ceiling of --header-h, so the reserved height and the real bar agree and
-   nothing shifts when the fetch lands. On a short viewport --header-h computes
-   below its ceiling and the bar then takes the logo's height instead, which is
-   the one case it grows. */
-.site-head .brand img{ width:clamp(48px, 5.2vw, 64px) }
+/* The bar carries the mark alone, so the mark can be large. --header-h derives
+   from this value, so the bar and the space reserved for it cannot drift. */
+.site-head .brand img{ width:var(--logo-h) }
 .brand span{
   font-weight:800; font-stretch:120%; font-size:clamp(.9rem, 1.1vw, 1rem);
   text-transform:uppercase; letter-spacing:.01em; line-height:1.05;
@@ -510,7 +513,16 @@ a.card:hover{ transform:translateY(-2px) }
    On the wrapped row the copy is alone and this margin only stretches its own
    box past the gutter, which is why .hero clips: left aligned text inside a box
    that is wider than the page is invisible, but it would still scroll. */
-.hero-copy{ flex:1 1 30rem; min-width:0; margin-inline-end:calc(-1 * var(--s6)) }
+.hero-copy{
+  flex:1 1 30rem; min-width:0;
+  margin-inline-end:calc(-1 * var(--s6));
+  /* Without this the negative margin lets the box grow past the wrap on the
+     stacked row, where the copy is alone and free to take the line plus the
+     margin back. The lede is capped at 46ch, which on a phone is wider than the
+     screen, so it would fill that overhang and have its right hand end clipped
+     by .hero. The cap resolves against the wrap, so it binds only there. */
+  max-width:100%;
+}
 .statrow{ flex:1 1 100% }
 
 .hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s2) }
@@ -795,7 +807,7 @@ a.card:hover{ transform:translateY(-2px) }
   display:grid; place-items:center;
   padding:var(--s3);
   border:1px solid var(--hair);
-  border-radius:var(--radius);
+  border-radius:var(--radius-lg);
   min-height:7rem;
 }
 /* Every supplied logo is dark ink on transparency, so all of them want the

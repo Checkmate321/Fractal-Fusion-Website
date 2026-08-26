@@ -28,8 +28,8 @@
       <span class="label">Team only</span>
       <h1>Add a log entry</h1>
       <div class="rule"></div>
-      <p class="lede">Three sentences is a perfectly good entry. One written tonight
-         beats a detailed one reconstructed in February.</p>
+      <p class="lede">Three sentences is a perfectly good entry. One written today
+         beats a detailed one reconstructed in a week.</p>
     </div>
   </section>
 
@@ -40,8 +40,9 @@
         <div class="measure">
           <span class="label">Photos</span>
           <h2>Photos go in the team Drive</h2>
-          <p>This form cannot take image uploads. Put them in the shared folder, then
-             describe them in the photos field so we know which entry they belong to.</p>
+          <p>This form cannot take image uploads. Put them in the shared folder and start
+             the filename with the date, like <span class="mono">2026-09-14-intake</span>,
+             so they can be matched to the right entry later.</p>
           <p>
             <a class="btn" id="photo-folder"
                href="https://drive.google.com/drive/folders/1cJLtyvKgX_VOBTnc9yhG80O-y_sLMR4x?usp=sharing"
@@ -98,12 +99,6 @@
             <label for="l-body">What happened</label>
             <textarea id="l-body" name="body" rows="9" required></textarea>
             <span class="hint">What you tried, what happened, what you changed. Leave a blank line between paragraphs.</span>
-          </div>
-
-          <div class="field">
-            <label for="l-photos">Photos <span class="opt">optional</span></label>
-            <textarea id="l-photos" name="photos" rows="2"></textarea>
-            <span class="hint">What they show, one per line, once they are in the folder above.</span>
           </div>
 
           <div class="field">
