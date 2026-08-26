@@ -25,7 +25,7 @@
 <div id="header"></div>
 
 <main>
-  <section class="hero">
+  <section class="hero band--dark">
     <div class="wrap">
 
       <div class="hero-head">
@@ -73,15 +73,17 @@
                firstinspires.org. datetime is the only place the date lives:
                main.js counts down from it, and with no script the element
                still reads as the date it points at. -->
-          <time class="stat" id="kickoff" datetime="2026-09-12T12:00:00-04:00">Sep 12</time>
+          <time class="stat stat--timer" id="kickoff" datetime="2026-09-12T12:00:00-04:00">Sep 12</time>
           <span class="label">Until FTC kickoff</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CHUNK 4, the sponsor wall. One set of logos here; main.js clones it to
-       fill the screen and slides it. Adding a sponsor means adding one li. -->
+  <!-- The sponsor strip. One set of logos is written here; main.js clones it
+       until the row is wider than the window, then slides it. Adding a
+       sponsor means adding one <li>. Note these are also listed in
+       data/sponsors.json for the sponsors page, so both need editing. -->
   <section class="band band--light sponsors">
     <div class="wrap">
       <span class="label">Backed by</span>

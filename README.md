@@ -91,14 +91,11 @@ well. Layouts collapse on their own:
 * the hero stacks by default, in source order, so a phone gets words, buttons,
   then a centred robot with nothing to reorder
 
-There are two width queries in the file, and both buy order or arrangement
-rather than size, which is the one thing a fluid value cannot express:
+The one width query is the footer's, where the social marks and the legal line
+swap places. That buys order, which is the one thing a fluid value cannot
+express. The hero has none: it is a single arrangement at every width.
 
-* the footer at `38rem`, where the social marks and the legal line swap places
-* the hero at `64rem`, where the robot stops being a row under the words and
-  becomes a layer over them
-
-The remaining `@media` rule is `prefers-reduced-motion`, which is a user setting
+The other `@media` rule is `prefers-reduced-motion`, which is a user setting
 rather than a breakpoint.
 
 ### Nav
@@ -163,29 +160,55 @@ Three things about the viewer are deliberate, and each one is load bearing:
   are a palette texture baked into the file, so nothing in CSS or JS sets a
   material.
 
-### The two arrangements
+### The band
 
-Below `64rem` the hero is one column: `.hero-head`, `.hero-actions`,
-`.hero-stage`, `.statrow`, in that source order, robot centred under the
-buttons. Above it the wrap becomes a three row grid and `.hero-head` and
-`.hero-stage` are both placed in row one, so they share a cell and overlap.
+The hero wrap is a three row grid: words, buttons, stats. `.hero-head` and
+`.hero-stage` are both placed in row one, so they share a cell and the robot is
+laid over the words. Same at every width; a phone gets a narrower version of the
+identical band, flush under the header, with the butter rule closing it off at
+the bottom.
 
-The robot sits right of the words at rest without the camera being touched: the
-`model-viewer` inside the stage is 170% wide and hung to one side, and the stage
+Row one ending where row two begins is what bounds the robot: it can never reach
+the buttons, and the row gap is the clearance above them. Nothing measures the
+buttons. The stage also carries a negative top margin equal to the hero's top
+padding, with the same amount added back to its `min-height`, so the band runs
+right up under the header without moving the buttons down.
+
+The robot sits right of the words without the camera being touched: the
+`model-viewer` inside the stage is 170% wide and slid sideways, and the stage
 clips the overhang. The obvious alternative, sliding the camera's look at point
 sideways, was measured and rejected: it makes the robot swing 97px across the
 screen as it turns instead of spinning on the spot, against 0px drift for this.
+
+The slide is `translateX(30vw)`, a proportion of the window rather than a
+distance, so the robot's middle sits at 80% across at every size instead of
+drifting as the window changes. Measured, it holds 80% from 320px to 1920px. A
+little of the robot passes the right edge on the narrowest screens, which is
+intended; the band is a full bleed crop at both ends anyway.
+
+That only works because the resting camera distance is not constant. See
+**Controls**.
 
 ### Controls
 
 Orbit is unbounded, polar runs 5deg to 175deg (top plate to underside, stopping
 short of the poles where the up vector is undefined and the view rolls), and
-zoom runs 15% to 400%. 15% is deliberately far enough in that the robot fills
-the whole window and covers the words: above `64rem` the stage is a full bleed
-`100vw` row laid over the copy, so there is nothing to stop it horizontally.
-What does stop it is the row below: the buttons are their own grid row, so the
-robot's box ends where theirs begins and the row gap is the clearance you see
-above them. Nothing measures the buttons, the grid does it. Panning is the one control left off: it slides the camera
+zoom runs 30% to 300%. Both stops are picked by what is still worth looking at:
+at 30% the robot spans the window and covers the words, and any closer puts you
+inside the chassis looking at the backs of panels, which reads as a bug rather
+than a feature; at 300% it is small but still legibly a robot. Nothing stops it
+horizontally at the near stop, because the stage is a full bleed `100vw` row.
+What stops it vertically is the row below, as described under **The band**.
+
+**The resting distance scales with the window**, in `restingRadius()`: 100% of
+the framing distance at 1024px and up, walking back to 155% by phone width, a
+straight line between. The robot is framed against the band's height, and the
+band does not shrink anything like as fast as a phone screen does, so one fixed
+distance that suits a desktop leaves the robot eating a small screen. With the
+walk, it takes 29 to 35% of the window on a desktop and 38 to 50% on a phone,
+against 71 to 75% before. A resize re-applies it, but only until somebody
+touches the robot: after that the camera is theirs and the window stops moving
+it. Panning is the one control left off: it slides the camera
 target sideways rather than turning it, so a stray drag leaves an empty stage
 with no obvious way back, whereas orbit and zoom always end up looking at the
 robot.

@@ -1,6 +1,66 @@
 /* ==========================================================================
-   FRACTAL FUSION, main.js
-   The only script. Header and footer injection, plus the engineering log.
+   FRACTAL FUSION, FTC 27188
+   main.js, the only script on the site.
+
+   No framework, no build step, no dependencies. Plain functions in one file,
+   read top to bottom.
+
+   ---------------------------------------------------------------------------
+   HOW A PAGE COMES TOGETHER
+   ---------------------------------------------------------------------------
+   Every page is static HTML with two empty divs, #header and #footer.
+   include() fetches header.html and footer.html and drops them in.
+
+   Because that is a fetch, two things follow:
+
+     1. The site must be served over http, not opened from the file system.
+        Run: python3 -m http.server 8000
+     2. Anything that touches the nav has to wait for the promise. The links
+        do not exist until the fetch resolves.
+
+   ---------------------------------------------------------------------------
+   WHERE THE CONTENT LIVES
+   ---------------------------------------------------------------------------
+   Growing content is JSON, never markup, so adding to the site never means
+   editing HTML:
+
+       data/log.json         build log entries, rendered by log.html,
+                             entry.html and the latest three on the home page
+       data/resources.json   downloads and guides on resources.html
+       data/sponsors.json    the detailed list on sponsors.html
+
+   Log entries are sorted newest first at render time, so new ones are always
+   appended to the end of the file and order never has to be thought about.
+
+   All values from those files pass through esc() before reaching the page.
+   They are typed by hand, so they are treated as text and never as markup.
+
+   ---------------------------------------------------------------------------
+   SECTIONS, IN ORDER
+   ---------------------------------------------------------------------------
+   PARTIALS            header and footer injection, active nav marking
+   SPONSOR STRIP       the scrolling logo marquee on the home page
+   KICKOFF COUNTDOWN   the countdown to the season reveal
+   EXTERNAL LINKS      opens off site links in a new tab, adds rel safety
+   HELPERS             escaping, date formatting, loading the log
+   LOG INDEX           the card grid and topic filters
+   SINGLE ENTRY        one entry, rendered from the ?id= in the address
+   HOME                the latest three entries
+   SPONSORS            the detailed sponsor list
+   RESOURCES           downloads, with pending items shown but not clickable
+   FORMS               submissions to Web3Forms, without leaving the page
+   ADD LOG             composes a submission into ready to paste JSON
+   HERO ROBOT          the 3D model on the home page
+   CLICK SOUND         interface click feedback
+   BOOT                what actually runs, and on which pages
+
+   ---------------------------------------------------------------------------
+   A NOTE ON FAILURE
+   ---------------------------------------------------------------------------
+   When a JSON file will not parse, the page says so in plain language and
+   names the likely cause, a stray comma. The person fixing it is a teammate
+   at eleven at night, not a developer, so the console is a fallback rather
+   than the message.
    ========================================================================== */
 
 
@@ -20,8 +80,9 @@ function include(id, file) {
     })
     .then(function (html) { host.innerHTML = html; })
     .catch(function (err) {
+      /* Most often this is the site being opened from the file system rather
+         than served. See the note at the top of this file. */
       console.error('[include]', err);
-      // Running from file://? fetch is blocked there. Use: python3 -m http.server
     });
 }
 
@@ -93,8 +154,9 @@ window.addEventListener('resize', function () {
 /* ==========================================================================
    KICKOFF COUNTDOWN
    The date lives in the markup, in the time element's datetime, so this only
-   formats it. Units step down as the date closes in, because a screen that
-   says 0d 14h is a worse read than one that says 14h 05m.
+   formats it. Units drop off the front as the date closes in, so the readout
+   is never padded with a leading 0d. Two digits on everything but the days,
+   which keeps the string one width and stops it jittering every second.
    ========================================================================== */
 
 function startKickoff() {
@@ -106,6 +168,8 @@ function startKickoff() {
 
   var label = el.nextElementSibling;
 
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
   function tick() {
     var left = when - Date.now();
 
@@ -115,19 +179,22 @@ function startKickoff() {
       return true;                       /* nothing left to count */
     }
 
-    var mins  = Math.floor(left / 6e4);
-    var days  = Math.floor(mins / 1440);
-    var hours = Math.floor(mins % 1440 / 60);
+    var secs  = Math.floor(left / 1000);
+    var days  = Math.floor(secs / 86400);
+    var hours = Math.floor(secs % 86400 / 3600);
+    var mins  = Math.floor(secs % 3600 / 60);
 
-    if (days)       el.textContent = days + 'd ' + hours + 'h';
-    else if (hours) el.textContent = hours + 'h ' + (mins % 60) + 'm';
-    else            el.textContent = (mins % 60) + 'm';
+    /* d:h:m:s, two digits each, leading groups dropping off as they empty. */
+    var clock = pad(mins) + ':' + pad(secs % 60);
+    if (days || hours) clock = pad(hours) + ':' + clock;
+    if (days)          clock = pad(days)  + ':' + clock;
 
+    el.textContent = clock;
     return false;
   }
 
   if (tick()) return;
-  var timer = setInterval(function () { if (tick()) clearInterval(timer); }, 30000);
+  var timer = setInterval(function () { if (tick()) clearInterval(timer); }, 1000);
 }
 
 startKickoff();
@@ -175,15 +242,16 @@ var LOG_URL = 'data/log.json';
 var TOPICS  = ['CAD', 'Mechanical', 'Misc', 'Outreach', 'Software', 'Strategy'];
 var MONTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-/* Entry text is pasted in by hand, so never trust it as markup. */
+/* Entry text is typed by hand into a form, so it is rendered as text and
+   never interpreted as markup. */
 function esc(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-/* Split the string rather than using new Date(), which reads a bare
-   YYYY-MM-DD as UTC midnight and lands on the previous day in Florida. */
+/* The date string is split by hand. new Date('2026-02-14') is read as UTC
+   midnight, which renders as the 13th anywhere west of Greenwich. */
 function fmtDate(iso) {
   var p = String(iso).split('-');
   if (p.length !== 3) return esc(iso);
@@ -194,7 +262,8 @@ function byDateDesc(a, b) {
   return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
 }
 
-/* Newest first, so entries can always be appended to the end of the file. */
+/* Sorted newest first at render time, so entries are always appended to the
+   end of the file and their order in it never matters. */
 function loadLog() {
   return fetch(LOG_URL)
     .then(function (res) {
@@ -247,7 +316,8 @@ function renderLogIndex(entries) {
   var active = params.get('topic');
   if (TOPICS.indexOf(active) === -1) active = 'All';
 
-  /* Only offer a topic that actually has entries behind it. */
+  /* Only topics with entries behind them get a button, so no filter can lead
+     to an empty page. */
   var present = TOPICS.filter(function (t) {
     return entries.some(function (e) { return e.topic === t; });
   });
@@ -285,7 +355,8 @@ function renderLogIndex(entries) {
       if (!btn) return;
       active = btn.dataset.topic;
 
-      /* Keep the filter in the URL so a view can be linked to. */
+      /* The filter is mirrored into the address, so a filtered view can be
+         linked to from anywhere. */
       var url = new URL(location.href);
       if (active === 'All') url.searchParams.delete('topic');
       else url.searchParams.set('topic', active);
@@ -449,7 +520,8 @@ function resourceHTML(r) {
     return '<div class="card card--line res-card is-pending">' + inner + '</div>';
   }
 
-  /* download tells the browser to save the file rather than try to display it. */
+  /* download asks the browser to save the file rather than try to render it,
+     which matters for the CAD models. */
   return '<a class="card card--line res-card" href="' + esc(r.href) + '"' +
          (r.download ? ' download' : ' rel="noopener"') + '>' + inner + '</a>';
 }
@@ -484,7 +556,8 @@ renderResources();
    ADD LOG, composes the entry so transcribing is copy and paste
    -------------------------------------------------------------------------- */
 
-/* Mirrors the id format used throughout data/log.json. */
+/* Builds the same id format used throughout data/log.json: a few words of
+   the title, lowercase, hyphen separated. */
 function slugify(title) {
   var parts = String(title).toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
@@ -495,8 +568,8 @@ function slugify(title) {
   return parts.length ? parts.join('-') : 'entry';
 }
 
-/* Blank line separated text becomes one array item per paragraph, because
-   JSON strings cannot hold a line break. */
+/* Turns blank line separated text into one array item per paragraph. JSON
+   strings cannot hold a line break, which is why body is a list. */
 function toParagraphs(text) {
   return String(text).split(/\n\s*\n/)
     .map(function (p) { return p.replace(/\s+/g, ' ').trim(); })
@@ -524,7 +597,8 @@ function buildLogEntry(form) {
   };
 }
 
-/* Writes the composed entry into the fields Web3Forms actually sends. */
+/* Puts the finished entry into the hidden fields Web3Forms transmits, and
+   gives the email a subject worth reading in an inbox. */
 function composeLogEntry(form) {
   var entry = buildLogEntry(form);
   var json  = JSON.stringify(entry, null, 2);
@@ -541,8 +615,8 @@ function composeLogEntry(form) {
     ''
   ];
 
-  /* The folder lives in the markup so the link still works without JS.
-     Read it back from there rather than keeping a second copy here. */
+  /* The folder URL is held in the markup, where it works without JavaScript,
+     and read back from there so there is only ever one copy of it. */
   var folder = document.getElementById('photo-folder');
 
   lines.push('If there are photos for this one they will be in the shared folder,');
@@ -562,8 +636,8 @@ function composeLogEntry(form) {
   return json;
 }
 
-/* Show the JSON on the page too, so whoever fills it in can copy it directly
-   without waiting for the email to arrive. */
+/* Also puts the JSON on the page, so whoever filled the form in can hand it
+   over immediately instead of waiting for the email. */
 function showLogJson(form, json) {
   var out = form.querySelector('.json-out');
   if (!out) return;
@@ -594,7 +668,7 @@ function initForms() {
       var status = form.querySelector('.form-status');
       var btn    = form.querySelector('button[type="submit"]');
 
-      /* Compose before serialising, so the assembled JSON is in the payload. */
+      /* Compose first, so the assembled JSON is part of what gets sent. */
       var composed = (form.dataset.compose === 'log') ? composeLogEntry(form) : null;
 
       var data = {};
@@ -670,6 +744,24 @@ function wantsRobot() {
   return true;
 }
 
+/* How far back the camera sits at rest, which is not a constant.
+
+   The robot is framed against the band's height, and the band does not shrink
+   nearly as fast as a phone screen does, so one fixed distance that suits a
+   desktop leaves the robot eating most of a small screen. The camera therefore
+   walks backwards as the window narrows: 100% of the framing distance at 1024px
+   and up, 155% by the time the window is phone width, straight line between.
+   The robot ends up occupying about the same share of the screen either way. */
+function restingRadius() {
+  var w = window.innerWidth;
+  var t = Math.min(1, Math.max(0, (1024 - w) / (1024 - 390)));
+  return Math.round(100 + t * 55) + '%';
+}
+
+function restingOrbit() {
+  return '35deg 72deg ' + restingRadius();
+}
+
 function buildRobot(stage) {
   var mv = document.createElement('model-viewer');
 
@@ -687,10 +779,19 @@ function buildRobot(stage) {
   mv.setAttribute('auto-rotate-delay', '0');
   mv.setAttribute('rotation-per-second', '16deg');
 
-  mv.addEventListener('camera-change', function onFirstTouch(ev) {
+  /* Two things happen the first time somebody touches the robot: the turntable
+     starts waiting three seconds before it resumes, and the resting distance
+     stops following the window. After that the camera is theirs. */
+  var touched = false;
+
+  mv.addEventListener('camera-change', function (ev) {
     if (!ev.detail || ev.detail.source !== 'user-interaction') return;
+    touched = true;
     mv.autoRotateDelay = 3000;
-    mv.removeEventListener('camera-change', onFirstTouch);
+  });
+
+  window.addEventListener('resize', function () {
+    if (!touched) mv.cameraOrbit = restingOrbit();
   });
 
   mv.setAttribute('camera-controls', '');
@@ -710,22 +811,23 @@ function buildRobot(stage) {
 
   /* A long lens flattens perspective, which is what makes a CAD render read as
      a drawing rather than a photograph. The orbit is the opening three quarter
-     view: round the front, slightly above. The radius sits under 100% so the
-     robot fills its stage instead of floating in the middle of it. */
+     view: round the front, slightly above, at whatever distance suits the
+     window. */
   mv.setAttribute('field-of-view', '24deg');
-  mv.setAttribute('camera-orbit', '35deg 72deg 100%');
+  mv.setAttribute('camera-orbit', restingOrbit());
 
-  /* The limits are as wide as the format allows. Polar runs 5deg to 175deg,
-     which is very nearly pole to pole: straight down onto the top plate at one
-     end and up underneath the drivetrain at the other. It stops short of the
-     poles themselves because the camera's up vector is undefined exactly there
-     and the view rolls unpredictably as it passes through.
+  /* Polar runs 5deg to 175deg, very nearly pole to pole: straight down onto the
+     top plate at one end and up underneath the drivetrain at the other. It
+     stops short of the poles themselves because the camera's up vector is
+     undefined exactly there and the view rolls unpredictably passing through.
 
-     Radius runs 40% to 400% of the framing distance, close enough to read a
-     screw head and far enough to see the whole robot as an object. Azimuth is
-     left unset, which leaves it unbounded: the turn never hits a wall. */
-  mv.setAttribute('min-camera-orbit', 'auto 5deg 15%');
-  mv.setAttribute('max-camera-orbit', 'auto 175deg 400%');
+     The radius stops are picked by what is still worth looking at. 30% is the
+     distance at which the robot spans the window: closer than that and you are
+     inside the chassis looking at the backs of panels, which reads as a bug.
+     300% is small but still legibly a robot; past that it is a speck. Azimuth
+     is left unset, which leaves it unbounded, so the turn never hits a wall. */
+  mv.setAttribute('min-camera-orbit', 'auto 5deg 30%');
+  mv.setAttribute('max-camera-orbit', 'auto 175deg 300%');
   mv.setAttribute('min-field-of-view', '10deg');
   mv.setAttribute('max-field-of-view', '45deg');
 
@@ -784,6 +886,64 @@ function initHeroRobot() {
 }
 
 initHeroRobot();
+
+
+/* --------------------------------------------------------------------------
+   CLICK SOUND
+   One delegated listener on the document, in the capture phase. Delegated
+   because the header and footer arrive by fetch, so anything bound to their
+   links directly would miss every one of them. Capture because a handler
+   further in may stop propagation, and because a link click starts tearing
+   the page down straight after.
+   -------------------------------------------------------------------------- */
+
+var CLICK_SRC = 'files/audio/click.wav';
+
+/* The file peaks at full scale, so it is loud played straight. This is the
+   one number to turn if it is still too much, or 1 to hear it as recorded. */
+var CLICK_VOLUME = 0.45;
+
+/* Clicked again before the last one has finished, an element playing from the
+   top cuts itself off. A handful of copies take turns instead, so a fast run
+   of clicks reads as a fast run of clicks. */
+var CLICK_VOICES = 4;
+
+/* What counts as clickable. Text fields are deliberately absent: putting a
+   cursor in a field is not the same gesture as pressing something. */
+var CLICK_TARGETS = 'a[href], button, [role="button"], summary, input[type="submit"]';
+
+function initClickSound() {
+  /* An unasked for noise is sensory feedback, so it answers to the same
+     setting the animations do. Delete these two lines to always play. */
+  if (window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var voices = [];
+  var next = 0;
+
+  for (var i = 0; i < CLICK_VOICES; i++) {
+    var voice = new Audio(CLICK_SRC);
+    voice.preload = 'auto';
+    voice.volume = CLICK_VOLUME;
+    voices.push(voice);
+  }
+
+  document.addEventListener('click', function (ev) {
+    var el = ev.target;
+    if (!el || !el.closest) return;          /* document itself, or a stray node */
+    if (!el.closest(CLICK_TARGETS)) return;
+
+    var v = voices[next];
+    next = (next + 1) % voices.length;
+
+    v.currentTime = 0;
+    /* Rejects when the file is missing, or when the browser does not count the
+       gesture as trusted. Neither is worth an unhandled rejection in console. */
+    v.play().catch(function () {});
+  }, true);
+}
+
+initClickSound();
 
 
 /* --------------------------------------------------------------------------

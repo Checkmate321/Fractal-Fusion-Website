@@ -1,10 +1,77 @@
 /* ==========================================================================
    FRACTAL FUSION, FTC 27188
-   style.css, the only stylesheet.
+   style.css, the only stylesheet on the site.
 
-   EDIT THE BLOCK BELOW. Everything else derives from it.
-   No raw hex value should ever appear below :root.
-   No breakpoints. Every size is fluid against the viewport.
+   ---------------------------------------------------------------------------
+   THE PALETTE IS THREE COLOURS
+   ---------------------------------------------------------------------------
+   --light   periwinkle    a ground, and the text colour on navy
+   --dark    slate navy    a ground, and the text colour on periwinkle
+   --c1      butter        the accent
+
+   Navy and periwinkle sit at 9.08:1 in both directions, so either one can be
+   the ground and the other becomes the text. That is why a section can flip
+   from light to dark without a single component changing.
+
+   Butter behaves differently depending on what is behind it:
+
+       on navy          9.70:1    a real text colour, use it for anything
+       on periwinkle    1.07:1    invisible, so it can only ever be a shape
+
+   On light grounds butter is a fill, a bar, a rule or an underline, never
+   type. That is the one rule the whole palette rests on.
+
+   ---------------------------------------------------------------------------
+   TWO TONES, BOTH MIXED FROM currentColor
+   ---------------------------------------------------------------------------
+   --mute    currentColor at 75%    secondary text, labels, captions
+   --hair    currentColor at 18%    borders and rules
+
+   Because they mix from the surrounding text colour, a single token is right
+   on either ground and nothing needs an override when a section flips. --mute
+   clears AA both ways. Anything fainter is decoration, not reading.
+
+   There is no third tone. If something needs to sit between the ground and
+   the text, it is a surface, not a tint. See below.
+
+   ---------------------------------------------------------------------------
+   SURFACES INVERT, THEY NEVER TINT
+   ---------------------------------------------------------------------------
+   A card on a light ground is --dark. A card on a dark ground is --light.
+   No half opacity fills, no in between shades. .card--line is the escape
+   hatch for when a dense grid would otherwise be a wall of solid slabs.
+
+   Only three components need to know which ground they are on, and they are
+   grouped together in one :is() selector: .stat, .btn and .lnk. Everything
+   else rides on currentColor and works out for itself.
+
+   ---------------------------------------------------------------------------
+   THERE ARE NO LAYOUT BREAKPOINTS
+   ---------------------------------------------------------------------------
+   Every size is clamp() against the viewport, and the two largest spacing
+   steps also read viewport height so short laptops do not lose the fold to
+   padding. Layouts collapse on their own using two patterns:
+
+       grids   repeat(auto-fit, minmax(min(100%, X), 1fr))
+       rows    flex-wrap, with a flex-basis that decides when an item drops
+
+   The min(100%, X) is what stops a grid track demanding more width than the
+   screen has. Without it a narrow phone gets a sideways scrollbar.
+
+   Two @media rules exist. One is a genuine width breakpoint in the footer,
+   explained where it sits, and it earns its place. The other is
+   prefers-reduced-motion, which is a user setting rather than a size.
+
+   ---------------------------------------------------------------------------
+   EDITING THIS FILE
+   ---------------------------------------------------------------------------
+   The palette lives in the :root block directly below. Nothing beneath it
+   should ever contain a raw hex value, so the entire site reskins from three
+   lines. If you find yourself reaching for a fourth colour, the answer is
+   usually a surface that inverts or a tone from currentColor.
+
+   Order: tokens, base, utilities, bands, cards, buttons, links, header,
+   footer, section furniture, then one block per page feature.
    ========================================================================== */
 
 :root{
@@ -34,6 +101,7 @@
   --t-lede  : clamp(1.05rem, 1.6vw, 1.1875rem);
   --t-small : clamp(.9rem, 1vw, .9375rem);
   --t-label : clamp(.66rem, .82vw, .6875rem);
+  --t-stat  : clamp(2rem, 4.4vw, 3.2rem);
 
   /* ---- SPACE, fluid ---------------------------------------------------- */
   --s1 : clamp(.35rem, .6vw,  .5rem);
@@ -143,7 +211,7 @@ a{ color:inherit }
 
 .stat{
   display:block;        /* it is a <time> in the hero, which is inline by default */
-  font-size:clamp(2rem, 4.4vw, 3.2rem);
+  font-size:var(--t-stat);
   font-weight:800;
   font-stretch:118%;
   line-height:1;
@@ -188,7 +256,7 @@ a{ color:inherit }
 .card--dark { background:var(--dark);  color:var(--light) }
 .card--light{ background:var(--light); color:var(--dark) }
 
-/* The release valve, so a dense grid is not all slabs. */
+/* Outlined rather than filled, for rows where solid cards would be too heavy. */
 .card--line{ background:transparent; border:1px solid var(--hair) }
 
 a.card{ transition:transform .16s ease }
@@ -266,9 +334,9 @@ a.card:hover{ transform:translateY(-2px) }
   text-underline-offset:3px;
 }
 
-/* A light card inside a dark band is a light ground again, so undo the
-   inherited dark treatment. Without this a link in such a card renders
-   yellow on periwinkle, which is 1.07:1 and effectively invisible. */
+/* A light card sitting inside a dark band is a light ground in its own right,
+   so it takes the light treatment back. The dark rules above match on an
+   ancestor, and the nearest surface is what should decide. */
 .card--light .lnk{
   color:inherit;
   background-image:linear-gradient(var(--c1),var(--c1));
@@ -337,7 +405,7 @@ a.card:hover{ transform:translateY(-2px) }
 .site-nav{
   display:flex; gap:var(--s3);
   flex:1 1 22rem;          /* below ~22rem of free space the nav wraps to its own line */
-  min-width:0;             /* without this the nav forces the page wider than the viewport */
+  min-width:0;             /* lets the nav shrink and scroll rather than stretch the bar */
   overflow-x:auto;
   scrollbar-width:none;
 }
@@ -485,44 +553,104 @@ a.card:hover{ transform:translateY(-2px) }
    HOME hero
    ========================================================================== */
 
-/* Light, like the page-head on every other page. No rule along the bottom: the
-   sponsor strip under it is the same ground, and the two reading as one block
-   is the point. Every gap in here is one step down the space scale from where
-   it started, which is the whole of "tighter". */
+/* Navy, and the ground is declared in the markup with band--dark rather than
+   set here, because three rules downstream key off that class: the stats turn
+   butter, the buttons hover to butter type instead of a butter fill, and links
+   become butter. Setting background here instead would leave all three reading
+   the hero as a light section. No rule along the bottom either: the strip below
+   is periwinkle, so the tone change is the edge.
+
+   Every gap in here is one step down the space scale from where it started. */
 .hero{
-  background:var(--light); color:var(--dark);
   padding-block:var(--s3) var(--s2);
   overflow:hidden;      /* contains the robot's full bleed row, see the query below */
 }
-/* Stacked is the base case, and it is what a phone gets: words, then buttons,
-   then the robot centred under them, each on its own full width row. Source
-   order already says this, so nothing here has to reorder anything. */
+/* Three rows: the words, the buttons, the stats. The robot is put in row one
+   as well, so it shares that cell with the words and is laid over them. That is
+   the whole arrangement, and it is the same one at every width: a phone gets
+   the same band across the top of the hero that a desktop does, only narrower.
+
+   Row one ending where row two begins is what bounds the robot. It can never
+   reach the buttons, and the row gap is the clearance above them. Nothing
+   measures anything, the grid does it.
+
+   Placement is written as child selectors so it beats the plain .statrow rule
+   further down the file whatever order the two end up in. */
 .hero .wrap{
-  display:flex; flex-wrap:wrap; align-items:center;
-  gap:var(--s3);
+  display:grid;
+  grid-template-columns:minmax(0, 1fr);
+  row-gap:var(--s3);
 }
-.hero-head{ flex:1 1 100%; min-width:0 }
-.hero-actions{ flex:1 1 100% }
-.statrow{ flex:1 1 100% }
+.hero .wrap > .hero-head{ grid-area:1 / 1; align-self:center; min-width:0 }
+.hero .wrap > .hero-actions{ grid-area:2 / 1 }
+.hero .wrap > .statrow{ grid-area:3 / 1; margin-top:0 }
 
 .hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s1) }
 .hero .lede{ margin-top:var(--s2); max-width:46ch }
 .hero-actions{ display:flex; flex-wrap:wrap; gap:var(--s2) }
 
-/* Centred, whole, and capped so it does not become the entire phone screen. */
+/* Row one, over the words, and the full width of the window rather than of the
+   wrap: the robot is meant to be able to cross the whole screen once it is
+   zoomed in. The margin is the usual full bleed pair to width:100vw, and
+   .hero's clip absorbs the scrollbar's worth that 100vw overshoots by.
+
+   min-height, because otherwise the row is only as tall as the words and the
+   robot would be tiny. It is the robot that decides how tall row one is, and
+   the buttons sit under whatever that comes to. */
 .hero-stage{
-  flex:1 1 100%;
-  min-width:0;
-  aspect-ratio:1;
-  max-width:26rem;
-  max-height:clamp(16rem, 60vw, 26rem);
-  margin-inline:auto;
+  --stage-h:clamp(20rem, 26vw + 14vh, 38rem);
+
+  grid-area:1 / 1;
+  z-index:1;
+  position:relative;
+  overflow:hidden;
+  width:100vw;
+  margin-inline:calc((100% - 100vw) / 2);
+
+  /* Up through the hero's own top padding, so a zoomed in robot runs into the
+     header instead of stopping a gap short of it. The height gains back exactly
+     what the margin takes, so row one is still --stage-h tall and the buttons
+     underneath do not move. */
+  margin-top:calc(-1 * var(--s3));
+  min-height:calc(var(--stage-h) + var(--s3));
+
+  /* The same butter rule the header carries, for the same reason: it is the
+     edge of a band. Without it a zoomed in robot ends on a raw cut, which reads
+     as clipping rather than as a deliberate edge. Two ends of one band, the
+     header's rule at the top and this at the bottom. */
+  border-bottom:2px solid var(--c1);
 }
 
-/* Fills the stage, transparent so the hero ground shows through, and never a
-   scroll trap: the viewer only takes the pointer when a drag starts on it. */
+/* Transparent so the hero ground shows through, and never a scroll trap on
+   touch: the viewer only takes the pointer when a drag starts on it.
+
+   The canvas is wider than the window on purpose. A model-viewer centres its
+   model in its own box, so moving the box is how the robot gets placed, and
+   .hero-stage clips the overhang. Sliding the camera's look at point sideways
+   would do it too, but it makes the robot swing across the screen as it turns
+   rather than spin on the spot: 97px of drift measured, against 0px for this.
+
+   The slide is a proportion of the window, not a distance, so the robot sits in
+   the same place relative to the screen at every size rather than drifting as
+   the window changes. 30vw right of centre puts its middle at 80% across, and
+   it stays there from a phone to an ultrawide.
+
+   It used to be guarded against running off a narrow screen. It is not any
+   more and does not need to be: what made a phone's robot too big to sit at
+   80% was the camera holding one fixed distance, and main.js now walks that
+   distance back as the window narrows. A little of the robot may cross the
+   right edge on the smallest screens, which is intended. The band is a full
+   bleed crop at both ends anyway.
+
+   Zoomed in, the robot grows about wherever that has put it and crosses the
+   words on its way to filling the window. */
 .hero-stage model-viewer{
-  width:100%; height:100%;
+  position:absolute;
+  inset-block:0;
+  left:-35%;
+  width:170%;
+  height:100%;
+  transform:translateX(30vw);
   background-color:transparent;
   --poster-color:transparent;
   touch-action:pan-y;
@@ -538,88 +666,26 @@ a.card:hover{ transform:translateY(-2px) }
 .hero-stage:empty{ display:none }
 
 
-/* The hero's one width query. Not a size, an arrangement: below it the robot is
-   a row under the words, above it the robot is laid over them. Layering and
-   stacking are not the same layout at two sizes, so no clamp expresses it.
 
-   Above the threshold the wrap becomes a three row grid, and the head and the
-   stage are both put in row one, so they occupy the same cell and overlap. The
-   buttons own row two. That is what bounds the robot: row one ends where row
-   two begins, so the robot can never reach the buttons, and the row gap is the
-   clearance above them. Nothing measures anything, the grid does it. */
-@media (min-width:64rem){
+/* 16:22:11:40 is 6.7em wide where 17,000+ is 3.8em, so equal columns cannot
+   hold both at one size: a quarter of the row is 196px and the countdown needs
+   340. Widening the countdown's track only moved the problem, squeezing the
+   others until their digits collided.
 
-  .hero .wrap{
-    display:grid;
-    grid-template-columns:minmax(0, 1fr);
-    row-gap:var(--s2);
-  }
-
-  /* Centred against the robot rather than pinned to the top of the row. The
-     row is as tall as the robot needs, which is taller than the words, so
-     without this the copy sits up in a corner with a hole under it. */
-  .hero-head   { grid-area:1 / 1; align-self:center }
-  .hero-actions{ grid-area:2 / 1 }
-  .statrow     { grid-area:3 / 1; margin-top:0 }
-
-  /* Row one, over the words, and the full width of the window rather than of
-     the wrap: the robot is meant to be able to cross the whole screen once it
-     is zoomed in. The margin is the usual full bleed pair to width:100vw, and
-     .hero's clip absorbs the scrollbar's worth that 100vw overshoots by.
-
-     min-height, because otherwise the row is only as tall as the words and the
-     robot would be smaller than it is on a tablet. It is the robot that sets
-     how tall row one is, and the buttons sit under whatever that comes to. */
-  .hero-stage{
-    --stage-h:clamp(20rem, 26vw + 14vh, 38rem);
-
-    grid-area:1 / 1;
-    z-index:1;
-    position:relative;
-    overflow:hidden;
-    width:100vw;
-    margin-inline:calc((100% - 100vw) / 2);
-    max-width:none;
-    max-height:none;
-    aspect-ratio:auto;
-
-    /* Up through the hero's own top padding, so a zoomed in robot runs into the
-       header instead of stopping a gap short of it. The height gains back
-       exactly what the margin takes, so the row is still --stage-h tall and the
-       buttons underneath do not move. */
-    margin-top:calc(-1 * var(--s4));
-    min-height:calc(var(--stage-h) + var(--s4));
-
-    /* The same butter rule the header carries, for the same reason: it is the
-       edge of a band. Without it a zoomed in robot ends on a raw cut, which
-       reads as clipping rather than as a deliberate edge. Two ends of one band
-       now, the header's rule at the top and this at the bottom. */
-    border-bottom:2px solid var(--c1);
-  }
-
-  /* The canvas is wider than the window and hung off to one side, which is what
-     puts the robot right of the words at rest without touching the camera. The
-     alternative, sliding the camera's look at point sideways, makes the robot
-     swing across the screen as it turns rather than spin on the spot: measured
-     at 97px of drift against 0px for this. A model-viewer centres its model in
-     its own box, so moving the box is the whole trick, and .hero-stage clips
-     the overhang. Zoomed in, the robot grows about that off centre point and
-     crosses the words on its way to filling the window. */
-  .hero-stage model-viewer{
-    position:absolute;
-    inset-block:0;
-    left:-3%;
-    width:170%;
-    height:100%;
-  }
-}
-
+   So the cells are sized by their contents and share the slack equally. Each
+   number gets exactly the width it needs, the visual gaps stay even because
+   every cell takes the same extra, nothing can be squeezed into overflow, and
+   the row wraps instead when the numbers stop fitting. */
 .statrow{
-  display:grid;
-  gap:var(--s3);
-  grid-template-columns:repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  display:flex; flex-wrap:wrap;
+  gap:var(--s3) var(--s4);
   margin-top:var(--s2);
 }
+.statrow > div{ flex:1 1 auto }
+
+/* Its own size is the point, so the only thing it needs is a promise not to
+   fold in the middle of a clock. */
+.stat--timer{ white-space:nowrap }
 .statrow .label{ margin-top:var(--s1) }
 
 
@@ -657,7 +723,7 @@ a.card:hover{ transform:translateY(-2px) }
   transition:background-color .14s ease, color .14s ease;
 }
 .log-filters button:hover{ border-color:currentColor }
-/* Active state inverts the ground, the same rule the cards follow. */
+/* The selected filter inverts its ground, the same way a card does. */
 .log-filters button.is-active{ background:var(--dark); color:var(--light); border-color:var(--dark) }
 
 .log-count{ margin-left:auto }
@@ -672,13 +738,14 @@ a.card:hover{ transform:translateY(-2px) }
 .log-thumb{ width:100%; aspect-ratio:8 / 5; object-fit:cover }
 .log-card .log-meta{ padding:var(--s3) var(--s3) 0 }
 .log-card h3{ padding:var(--s2) var(--s3) 0 }
-/* Grid rows stretch to equal height, so let the summary absorb the slack.
-   Without this an entry with no thumbnail leaves a gap under its text. */
+/* Grid rows are equal height, so the summary takes up any spare room. That
+   keeps every card's footer on its bottom edge, thumbnail or not. */
 .log-summary{ padding:var(--s2) var(--s3) var(--s3); color:var(--mute);
   font-size:var(--t-small); flex:1 1 auto }
 .log-card .sample{ margin:0 var(--s3) var(--s3) }
 
-/* Loud enough that nobody ships invented history by accident. */
+/* Marks the sample entries that shipped with the site. Deliberately hard to
+   miss, so none of them reach the public site as though they were real. */
 .sample{
   display:inline-block;
   font-family:var(--mono);
@@ -865,8 +932,8 @@ a.card:hover{ transform:translateY(-2px) }
   border-radius:var(--radius-lg);
   min-height:7rem;
 }
-/* Every supplied logo is dark ink on transparency, so all of them want the
-   light ground. Do not place this wall on a dark band. */
+/* Sponsor logos are dark ink on transparency, which is how brand assets
+   normally arrive. They need a light ground, so keep this wall on one. */
 .sponsor-logo{
   max-height:5rem; width:auto; max-width:100%;
   object-fit:contain;
@@ -915,7 +982,8 @@ a.card:hover{ transform:translateY(-2px) }
 .field input:focus-visible,
 .field textarea:focus-visible{ outline:2px solid var(--c1); outline-offset:1px; border-color:transparent }
 
-/* Honeypot. Hidden from people, reachable by bots. */
+/* Honeypot. Off screen for people, still in the DOM for bots that fill in
+   every field they find. */
 .botcheck{ position:absolute; left:-9999px; width:1px; height:1px; opacity:0 }
 
 .form button[type="submit"]{ justify-self:start }
@@ -967,7 +1035,8 @@ a.card:hover{ transform:translateY(-2px) }
 .res-summary{ color:var(--mute); font-size:var(--t-small); margin:0 }
 .res-meta{ margin-top:auto; padding-top:var(--s1) }
 
-/* Nothing to download yet, so it must not look or behave like a link. */
+/* An entry with no file yet. It stays visible so planned work can be
+   announced, but it is not an anchor and does not invite a click. */
 .res-card.is-pending{ opacity:.72 }
 .res-card.is-pending .res-type{ background:transparent; color:inherit; border:1px solid var(--hair) }
 
@@ -985,7 +1054,8 @@ a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
 .season-head{ display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s2) var(--s3) }
 .season-head h3{ font-size:var(--t-h3); font-stretch:112% }
 
-/* A table cannot wrap, so it gets its own scroll rather than pushing the page. */
+/* A table has a floor width it cannot go below, so it scrolls inside its own
+   box and the page stays put. */
 .tablewrap{ overflow-x:auto; margin-top:var(--s3) }
 
 .rec{ border-collapse:collapse; width:100%; min-width:34rem; font-size:var(--t-small) }
@@ -1018,7 +1088,8 @@ a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
 }
 .field select:hover{ border-color:currentColor }
 .field select:focus-visible{ outline:2px solid var(--c1); outline-offset:1px; border-color:transparent }
-/* The dropdown list itself is painted by the OS, so it needs real colours. */
+/* The open dropdown is drawn by the operating system rather than the page,
+   so its colours have to be stated outright. */
 .field select option{ background:var(--light); color:var(--dark) }
 
 
@@ -1041,7 +1112,8 @@ a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
 }
 .json-copy{ padding:.5rem .9rem; font-size:var(--t-label) }
 
-/* Long ids and sentences must scroll here rather than widen the page. */
+/* Preformatted text scrolls inside its own box, so a long id cannot widen
+   the page. */
 .json-body{
   margin:0;
   overflow-x:auto;
@@ -1057,7 +1129,8 @@ a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
    SPONSOR PITCH
    ========================================================================== */
 
-/* "156/8,365". The denominator is context, so it must not shout as loud. */
+/* The denominator in a figure like 156/8,365. It is context for the number
+   beside it, so it stays quieter. */
 .stat-sub{
   font-size:.42em;
   font-weight:700;
