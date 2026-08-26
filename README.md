@@ -328,7 +328,16 @@ Two things to set on the host:
 * the largest file is `files/CAD/26Worlds.glb` at about 10.5 MB, comfortably under
   Cloudflare Pages' 25 MB per file limit
 
-**The site assumes it is served from the root of a domain.** `header.html`,
-`footer.html` and their links are root relative, so the 404 page still works when
-it is served in place of a deep path. Hosting the site in a subfolder would
-require making those relative again.
+**Every same-site path is relative, never root relative.** `header.html`,
+`footer.html`, their links, and the two `include()` fetches in `main.js` all use
+paths like `log.html` and `files/logos/ffLogo-512.png`, so the site works from a
+domain root *and* from a subfolder such as a GitHub Pages project URL
+(`checkmate321.github.io/Fractal-Fusion-Website/`). Root relative paths break on
+a project URL: the header fetch 404s and the page renders with no header at all.
+
+Every page sits at the top level, so relative paths on `404.html` resolve
+correctly too. Keep it that way, or the 404 page will lose its styling.
+
+The `og:url` tags, `sitemap.xml` and `robots.txt` still name
+`https://fractalfusion.team/`, which is not yet attached. Update them, and add a
+`CNAME` file, when the domain's DNS points at the host.

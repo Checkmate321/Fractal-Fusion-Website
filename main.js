@@ -225,11 +225,11 @@ function markExternalLinks(root) {
 
 markExternalLinks();
 
-include('header', '/header.html').then(function () {
+include('header', 'header.html').then(function () {
   markActiveNav();
   markExternalLinks(document.getElementById('header'));
 });
-include('footer', '/footer.html').then(function () {
+include('footer', 'footer.html').then(function () {
   markExternalLinks(document.getElementById('footer'));
 });
 

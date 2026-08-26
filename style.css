@@ -651,8 +651,12 @@ a.card:active{ transform:translateY(0) }
   grid-area:1 / 1; align-self:center; min-width:0;
   /* The pad is on the words, not on the hero, so the band still starts flush
      under the header while the label keeps a little air beneath the rule. A
-     hero level pad would push the band down with it and put the gap back. */
-  padding-block:var(--s2) var(--s3);
+     hero level pad would push the band down with it and put the gap back.
+
+     The bottom is a step below the top rather than a step above it. The buttons
+     already carry their own bracket below the type, so the pad only has to keep
+     that shape off the butter rule, not clear the type itself. */
+  padding-block:var(--s2);
 }
 
 .hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s1) }
@@ -707,8 +711,16 @@ a.card:active{ transform:translateY(0) }
 
    The slide is a proportion of the window, not a distance, so the robot sits in
    the same place relative to the screen at every size rather than drifting as
-   the window changes. 30vw right of centre puts its middle at 80% across, and
-   it stays there from a phone to an ultrawide.
+   the window changes. 30vw right of centre puts its middle at 80% across, which
+   is where it sits at 1024px and wider.
+
+   Below that it goes further right, on the same ramp the lift above uses and
+   from the same 64rem start, so both corrections come in together as the window
+   narrows. The words are what it is getting out of the way of: the heading wraps
+   to more lines as the band narrows, so the empty right hand end it was sitting
+   over shrinks at exactly the width the robot would otherwise start crossing the
+   text. The ramp is capped at 10vw so the robot cannot walk off the edge on the
+   smallest screens; at that cap its middle is 90% across.
 
    The lift is in the insets above, not the transform, and it is zero on
    anything 1024px or wider. Below that the band is nearly as tall as the words
@@ -746,7 +758,7 @@ a.card:active{ transform:translateY(0) }
   bottom:0;
   height:auto;   /* model-viewer ships a default height that would beat the insets */
 
-  transform:translateX(30vw);
+  transform:translateX(calc(30vw + min(10vw, max(0px, (64rem - 100vw) * 0.09))));
   background-color:transparent;
   --poster-color:transparent;
   touch-action:pan-y;
@@ -1015,7 +1027,30 @@ a.card:active{ transform:translateY(0) }
   justify-content:space-between;
   margin-bottom:var(--s4);
 }
-.section-bar h2{ margin-top:var(--s1) }
+/* Its own step below --t-h2. The heading shares a row with the button, so on a
+   narrow window it is working in whatever width the button leaves rather than
+   the whole wrap, and --t-h2's floor was tall enough there to break it into
+   four lines. Same slope as --t-h2, so from about 640px up this is the size it
+   always was; only the floor moves. .9rem is the largest floor that still fits
+   the heading on two lines in the 128px an SE leaves it: 1rem is four. */
+.section-bar h2{ font-size:clamp(.9rem, 3.4vw, 2rem); margin-top:var(--s1) }
+
+/* The heading takes the row and shrinks into it, so it and the button stay on
+   one line. Without a basis the heading asks for its full width up front and
+   the button is pushed onto a line of its own long before the row is actually
+   full. The basis is small on purpose: it is only the width at which the pair
+   gives up and stacks, and the heading grows past it to fill whatever the
+   button leaves. At 5rem that is about a 330px window, so every phone in use
+   keeps the two side by side. */
+.section-bar > :first-child{ flex:1 1 5rem; min-width:0 }
+
+/* Section furniture, not a page action: it sits beside a heading rather than
+   under a paragraph, so it is cut down from the standard button. The notch
+   comes back with it, or the corner cut eats most of a shorter button. */
+.section-bar .btn{
+  --notch:.9rem;
+  padding:.6rem 1.05rem;
+}
 
 /* Two columns where there is room, stacked where there is not. */
 .split{
