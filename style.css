@@ -58,9 +58,14 @@
    The min(100%, X) is what stops a grid track demanding more width than the
    screen has. Without it a narrow phone gets a sideways scrollbar.
 
-   Two @media rules exist. One is a genuine width breakpoint in the footer,
-   explained where it sits, and it earns its place. The other is
-   prefers-reduced-motion, which is a user setting rather than a size.
+   Three @media rules exist. Two are genuine width breakpoints, one in the
+   footer and one for phones, each explained where it sits. Mostly they buy
+   arrangement rather than size, order and what is on which row, which no clamp
+   can express. The phone one also carries a few sizes: the footer's row has to
+   hold the brand and five marks at 320px, and shrinking them is only wanted on
+   the screens that cannot fit them. As plain clamps those would go on changing
+   the wide footer too, which is not the point. The third rule is
+   prefers-reduced-motion, a user setting rather than a size.
 
    ---------------------------------------------------------------------------
    EDITING THIS FILE
@@ -349,13 +354,29 @@ a.card:hover{ transform:translateY(-2px) }
 .card--light .lnk:focus-visible{ background-size:100% 100% }
 .card--light .stat{ color:inherit }
 
-.mark{ background:var(--c1); color:var(--dark); padding:1px 5px; border-radius:2px; font-weight:600 }
+/* A highlighter. Every value is in em, so the same class works on a 16px
+   paragraph and on a 76px hero line: at fixed pixels the padding and corner
+   shrink to a sticker once the type is large. Weight is inherited for the same
+   reason, since a fixed 600 would thin any heading it landed in, and the fill
+   is the emphasis anyway. box-decoration-break keeps the padding and both
+   corners intact on each fragment when a highlight breaks across a line. */
+.mark{
+  background:var(--c1);
+  color:var(--dark);
+  font-weight:inherit;
+  padding:.04em .2em;
+  border-radius:.08em;
+  -webkit-box-decoration-break:clone;
+          box-decoration-break:clone;
+}
 
 
 /* ==========================================================================
    SITE HEADER
-   The nav carries a flex-basis, so it drops to its own row on its own
-   when there is no longer room beside the wordmark. No breakpoint needed.
+   The nav carries a flex-basis, so it drops to its own row on its own when
+   there is no longer room beside the wordmark. Below 37rem that decision is
+   taken by the phone query at the foot of the file instead, because the
+   reserved height has to know which way it went.
    ========================================================================== */
 
 /* The bar is pinned by its wrapper, not by .site-head itself. A sticky element
@@ -393,14 +414,32 @@ a.card:hover{ transform:translateY(-2px) }
 .brand img{ width:clamp(32px, 3.4vw, 40px); height:auto; transition:transform .3s ease }
 .brand:hover img{ transform:rotate(12deg) }
 
-/* The bar carries the mark alone, so the mark can be large. --header-h derives
-   from this value, so the bar and the space reserved for it cannot drift. */
+/* The bar's mark is the larger of the two. --header-h derives from this value,
+   so the bar and the space reserved for it cannot drift. */
 .site-head .brand img{ width:var(--logo-h) }
 .brand span{
   font-weight:800; font-stretch:120%; font-size:clamp(.9rem, 1.1vw, 1rem);
   text-transform:uppercase; letter-spacing:.01em; line-height:1.05;
 }
 .brand em{ font-style:normal; color:var(--c1) }
+
+/* Beside a mark that size the shared wordmark size reads as an afterthought,
+   so the header's scales off the mark instead, at the same mark-to-wordmark
+   ratio the footer sets. One lockup, two sizes, no second number to keep. */
+.site-head .brand span{ font-size:calc(var(--logo-h) / 2.5) }
+
+/* Both halves ease rather than snap, on the same .3s as the mark's tilt above,
+   so the whole gesture moves as one thing. The reduced-motion rule at the foot
+   of the file switches all three off together. */
+.brand span,
+.brand em{ transition:color .3s ease }
+
+/* The two colours trade places on hover: Fractal takes the butter, Fusion
+   takes the ground colour. Stated on both halves rather than letting Fractal
+   ride an inherited link hover, so the swap survives a change to that rule.
+   One anchor holds mark and wordmark, so hovering either one runs the lot. */
+.brand:hover span{ color:var(--c1) }
+.brand:hover em  { color:var(--light) }
 
 .site-nav{
   display:flex; gap:var(--s3);
@@ -423,8 +462,6 @@ a.card:hover{ transform:translateY(-2px) }
 }
 .site-nav a:hover{ color:var(--light) }
 .site-nav a.is-active{ color:var(--light); border-bottom-color:var(--c1) }
-
-
 /* ==========================================================================
    SITE FOOTER
    One row that wraps: brand, legal and contact strip, marks. No divider and
@@ -434,14 +471,6 @@ a.card:hover{ transform:translateY(-2px) }
 .site-foot{ background:var(--dark); color:var(--light); padding-block:var(--s3) }
 .site-foot a{ color:var(--mute); text-decoration:none }
 .site-foot a:hover{ color:var(--c1) }
-
-/* The wordmark trades its two colours on hover: Fractal takes the butter,
-   Fusion takes the periwinkle. Stated on both halves rather than letting
-   Fractal ride the footer link hover above, so the swap survives a change to
-   that rule. One anchor holds the mark and the wordmark, so hovering either
-   one runs the swap, and the mark's tilt comes along with it. */
-.site-foot .brand:hover span{ color:var(--c1) }
-.site-foot .brand:hover em  { color:var(--light) }
 
 /* Brand left, marks right, strip between. space-between does that on one line
    and stacks the three in source order when the line runs out. */
@@ -563,31 +592,46 @@ a.card:hover{ transform:translateY(-2px) }
    Every gap in here is one step down the space scale from where it started. */
 .hero{
   padding-block:var(--s3) var(--s2);
-  overflow:hidden;      /* contains the robot's full bleed row, see the query below */
+  overflow:hidden;      /* contains the robot's full bleed row, see below */
 }
-/* Three rows: the words, the buttons, the stats. The robot is put in row one
-   as well, so it shares that cell with the words and is laid over them. That is
-   the whole arrangement, and it is the same one at every width: a phone gets
-   the same band across the top of the hero that a desktop does, only narrower.
 
-   Row one ending where row two begins is what bounds the robot. It can never
-   reach the buttons, and the row gap is the clearance above them. Nothing
-   measures anything, the grid does it.
-
-   Placement is written as child selectors so it beats the plain .statrow rule
-   further down the file whatever order the two end up in. */
+/* With the robot in place the band is edged by a butter rule at each end: the
+   header's at the top and the stage's own at the bottom. A pad outside either
+   of them reads as a navy gutter beside a border, so both go. With no robot
+   there are no rules and the pads are what keep the words off the header and
+   the band below, so they only go when the stage has something in it. */
+.hero:has(.hero-stage:not(:empty)){ padding-block:0 }
+/* One cell, holding the words and the robot on top of each other. The words
+   carry the buttons now, so everything the hero says is inside the robot's row
+   and above the butter rule that closes it. Same arrangement at every width: a
+   phone gets the band a desktop does, only narrower. */
 .hero .wrap{
   display:grid;
   grid-template-columns:minmax(0, 1fr);
-  row-gap:var(--s3);
 }
-.hero .wrap > .hero-head{ grid-area:1 / 1; align-self:center; min-width:0 }
-.hero .wrap > .hero-actions{ grid-area:2 / 1 }
-.hero .wrap > .statrow{ grid-area:3 / 1; margin-top:0 }
+/* The pad is clearance between the buttons and the butter rule. It only shows
+   when the words are what make the row tall, which is the narrow case: where
+   the robot is taller, the head is centred in the row and the pad disappears
+   into the centring. */
+.hero .wrap > .hero-head{
+  grid-area:1 / 1; align-self:center; min-width:0;
+  /* The pad is on the words, not on the hero, so the band still starts flush
+     under the header while the label keeps a little air beneath the rule. A
+     hero level pad would push the band down with it and put the gap back. */
+  padding-block:var(--s2) var(--s3);
+}
 
 .hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s1) }
 .hero .lede{ margin-top:var(--s2); max-width:46ch }
-.hero-actions{ display:flex; flex-wrap:wrap; gap:var(--s2) }
+
+/* z-index over the stage's 1, or the viewer's canvas covers the buttons and
+   swallows the clicks. The margin is the clearance the row gap used to give
+   them, now that they are inside the head rather than a row below it. */
+.hero-actions{
+  position:relative; z-index:2;
+  margin-top:var(--s3);
+  display:flex; flex-wrap:wrap; gap:var(--s2);
+}
 
 /* Row one, over the words, and the full width of the window rather than of the
    wrap: the robot is meant to be able to cross the whole screen once it is
@@ -607,12 +651,9 @@ a.card:hover{ transform:translateY(-2px) }
   width:100vw;
   margin-inline:calc((100% - 100vw) / 2);
 
-  /* Up through the hero's own top padding, so a zoomed in robot runs into the
-     header instead of stopping a gap short of it. The height gains back exactly
-     what the margin takes, so row one is still --stage-h tall and the buttons
-     underneath do not move. */
-  margin-top:calc(-1 * var(--s3));
-  min-height:calc(var(--stage-h) + var(--s3));
+  /* No climb needed any more: the hero drops its own top pad whenever the stage
+     is filled, so row one already starts flush under the header. */
+  min-height:var(--stage-h);
 
   /* The same butter rule the header carries, for the same reason: it is the
      edge of a band. Without it a zoomed in robot ends on a raw cut, which reads
@@ -635,6 +676,18 @@ a.card:hover{ transform:translateY(-2px) }
    the window changes. 30vw right of centre puts its middle at 80% across, and
    it stays there from a phone to an ultrawide.
 
+   The lift is in the insets above, not the transform, and it is zero on
+   anything 1024px or wider. Below that the band is nearly as tall as the words
+   while the robot inside it has been walked back by the camera, so a centred
+   robot leaves a hole above it and sits on the lede underneath. Raising it
+   fills the hole, and it uncovers the lede on the way: the space it moves into
+   is the short right hand end of the first heading lines, which is empty.
+
+   Growing the canvas rather than moving it makes it taller than the band, and a
+   model-viewer sizes its model against the frame height, so the robot would
+   come out bigger by the same ratio. main.js divides that ratio back out of the
+   resting distance, which is why restingRadius takes the element.
+
    It used to be guarded against running off a narrow screen. It is not any
    more and does not need to be: what made a phone's robot too big to sit at
    80% was the camera holding one fixed distance, and main.js now walks that
@@ -646,10 +699,19 @@ a.card:hover{ transform:translateY(-2px) }
    words on its way to filling the window. */
 .hero-stage model-viewer{
   position:absolute;
-  inset-block:0;
   left:-35%;
   width:170%;
-  height:100%;
+
+  /* Anchored to the band's bottom and grown upward, rather than moved upward.
+     Twice the lift added above and the bottom pinned to 0 puts the canvas
+     middle one lift higher while its bottom edge stays on the butter rule, so a
+     zoomed in robot still reaches the bottom of the band. Translating it
+     instead, which is what this used to do, carried the bottom edge up with it
+     and left a strip of bare navy behind the buttons. */
+  top:calc(-2 * max(0px, (64rem - 100vw) * 0.12));
+  bottom:0;
+  height:auto;   /* model-viewer ships a default height that would beat the insets */
+
   transform:translateX(30vw);
   background-color:transparent;
   --poster-color:transparent;
@@ -667,26 +729,42 @@ a.card:hover{ transform:translateY(-2px) }
 
 
 
-/* 16:22:11:40 is 6.7em wide where 17,000+ is 3.8em, so equal columns cannot
-   hold both at one size: a quarter of the row is 196px and the countdown needs
-   340. Widening the countdown's track only moved the problem, squeezing the
-   others until their digits collided.
+/* The three numbers are very different widths: a countdown like 17:22:11:40 is
+   about 6.7em where 2,000+ is 3.4em. Equal columns cannot hold both at one
+   size, so the cells are sized by their contents and share the leftover space
+   equally. Each number gets exactly the width it needs and the visual gaps
+   stay even, because every cell takes the same extra.
 
-   So the cells are sized by their contents and share the slack equally. Each
-   number gets exactly the width it needs, the visual gaps stay even because
-   every cell takes the same extra, nothing can be squeezed into overflow, and
-   the row wraps instead when the numbers stop fitting. */
+   The row never wraps. It holds all three side by side down to a 320px phone,
+   which is what --t-stat's lower bound and the short labels are sized for. */
 .statrow{
   display:flex; flex-wrap:wrap;
   gap:var(--s3) var(--s4);
-  margin-top:var(--s2);
 }
+
+/* The strip is the numbers and nothing else, so it does not need a band's full
+   padding to hold them. */
+.stats{ padding-block:var(--s3) }
 .statrow > div{ flex:1 1 auto }
 
 /* Its own size is the point, so the only thing it needs is a promise not to
    fold in the middle of a clock. */
 .stat--timer{ white-space:nowrap }
 .statrow .label{ margin-top:var(--s1) }
+
+
+/* The home page strip holds its three numbers on one line at every width,
+   down to a 320px phone. Three things make that fit, and all three are
+   needed: cells sized by their contents rather than in equal thirds, a
+   tighter gap, and a stat size whose lower bound is small enough that the
+   countdown, much the widest of the three, still clears its neighbours.
+
+   The labels are one or two short words for the same reason. Lengthen one
+   and it becomes the widest thing in its cell, and the row stops fitting. */
+.stats .statrow{ flex-wrap:nowrap; gap:var(--s2); align-items:start }
+.stats .statrow > div{ flex:0 1 auto; min-width:0 }
+.stats .statrow .label{ white-space:nowrap }
+.stats .stat{ font-size:clamp(1.05rem, 4.6vw, 3.2rem) }
 
 
 /* ==========================================================================
@@ -798,7 +876,7 @@ a.card:hover{ transform:translateY(-2px) }
 
 .marquee{
   --spon-gap : clamp(1.5rem, 4vw, 3rem);
-  margin-top:var(--s3);
+  margin-top:var(--s2);
   overflow:hidden;
 
   /* Room inside the clip box for a name to slide down into. overflow cannot be
@@ -815,7 +893,14 @@ a.card:hover{ transform:translateY(-2px) }
 /* Its own paddings rather than band--tight's: the label wants air above it,
    the logos need very little under them, and --s5 on both sides was the gap
    you could see. */
-.sponsors{ padding-block:var(--s3) var(--s1) }
+/* The strip is a label and a line of logos, so it wants very little of its
+   own. Nothing at the bottom: the marquee already carries the clip room the
+   hover reveal needs, and a band pad under that reads as a second gap.
+
+   The band after it gives up most of its top pad too. --s6 is written for two
+   blocks of text meeting; against a row of logos it left a hole. */
+.sponsors{ padding-block:var(--s2) 0 }
+.sponsors + .band{ padding-top:var(--s3) }
 
 .marquee-run{ display:flex; width:max-content }
 .marquee-run.is-running{ animation:marquee var(--marquee-time, 40s) linear infinite }
@@ -994,20 +1079,32 @@ a.card:hover{ transform:translateY(-2px) }
 
 
 /* ==========================================================================
-   PARTNER TRACKS
+   PARTNER ROUTES
+   Three cards side by side, each one short enough that the whole set fits a
+   screen. The detail that used to sit under each heading now lives in a
+   <dialog> behind the button at the card's foot, so the cards stay the same
+   height and nothing here scrolls.
+
+   The cards are --line rather than solid: three filled slabs on a navy band
+   would be a wall, and an inverted card would put butter labels on
+   periwinkle, where butter is 1.07:1 and disappears.
    ========================================================================== */
 
-.track{
-  display:grid; gap:var(--s2) var(--s4);
-  grid-template-columns:repeat(auto-fit, minmax(min(100%, 8rem), auto));
-  padding-block:var(--s5);
-  border-top:1px solid var(--hair);
+.routes-intro{ margin-bottom:var(--s5) }
+.routes-intro h2{ margin:var(--s1) 0 var(--s2) }
+
+.route{
+  display:flex; flex-direction:column; align-items:start;
+  gap:var(--s2);
 }
-.track:first-of-type{ border-top:0; padding-top:0 }
-.track-num{ color:var(--c1) }
-.track-body{ max-width:var(--wrap-text) }
-.track-body h3{ font-size:var(--t-h2); font-stretch:118%; text-transform:uppercase }
-.track-body .lede{ margin:var(--s2) 0 var(--s3) }
+.route-num{ color:var(--c1) }
+.route h3{ font-size:var(--t-h3); font-stretch:118%; text-transform:uppercase }
+.route-who{ margin:0; color:var(--mute) }
+.route-ask{ margin:0 }
+
+/* Pinned to the foot so the three buttons line up across cards of unequal
+   copy length. */
+.route-more{ margin-top:auto }
 
 .track-dl{ margin:0; display:grid; gap:var(--s2) }
 .track-dl dt{
@@ -1018,6 +1115,28 @@ a.card:hover{ transform:translateY(-2px) }
 .track-dl dt:first-of-type{ margin-top:0 }
 .track-dl dd{ margin:0; color:var(--mute) }
 .track-dl dd strong{ color:inherit }
+
+
+/* ==========================================================================
+   MODAL
+   A native <dialog>. The element keeps its own display, so nothing here may
+   set one: a display on .modal would show a closed dialog. Sizing only.
+   ========================================================================== */
+
+.modal{
+  width:min(42rem, calc(100vw - 2 * var(--s3)));
+  max-height:min(88dvh, 46rem);
+  overflow:auto;
+  margin:auto;
+  padding:var(--s4);
+  border:1px solid var(--hair);
+  border-radius:var(--radius-lg);
+}
+.modal h3{ font-size:var(--t-h2); font-stretch:118%; text-transform:uppercase;
+           margin:var(--s1) 0 var(--s3) }
+.modal::backdrop{ background:var(--dark); opacity:.8 }
+
+.modal-foot{ display:flex; flex-wrap:wrap; gap:var(--s2); margin-top:var(--s4) }
 
 
 /* ==========================================================================
@@ -1167,6 +1286,78 @@ a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
   font-family:var(--mono);
   font-size:var(--t-small);
   color:var(--mute);
+}
+
+
+/* ==========================================================================
+   PHONES
+   The second width breakpoint, and like the footer's it buys arrangement, not
+   size. The bar stays one line tall here, which it cannot do while carrying
+   the mark, the wordmark and the tags at once: the wordmark goes, the tags
+   close up, and the nav takes what the mark leaves of the row instead of a row
+   of its own. --header-h needs no restating for that reason, since the bar is
+   the same one row here as everywhere else, so nothing jumps when the header
+   lands.
+
+   The footer is here for the opposite reason. It is not rearranged at all: it
+   keeps the brand left, the marks right and the strip centred underneath, the
+   same as every wider screen. What it cannot keep is the full size of those
+   parts, because at 320px the row is 74px short of holding them.
+   ========================================================================== */
+
+@media (max-width:37rem){
+
+  :root{
+    /* A smaller mark, because the five tags need the width more than the mark
+       does, and on this side of the query the mark is the whole visible brand.
+       --header-h derives from this, so the bar and the space reserved for it
+       shrink together, and there is still nothing to keep in sync by hand. */
+    --logo-h:40px;
+  }
+
+  /* The mark already says whose site this is, and it is the half of the lockup
+     still legible at this size. Hidden the long way rather than with
+     display:none: the image carries empty alt, so this wordmark is the whole
+     accessible name of the link home, and a screen reader still has to read
+     it. */
+  .site-head .brand span{
+    position:absolute;
+    width:1px; height:1px;
+    overflow:hidden;
+    clip-path:inset(50%);
+    white-space:nowrap;
+  }
+
+  /* Tighter tags, and a basis of zero so the nav takes whatever the mark
+     leaves of the bar's line rather than asking for a line of its own. Past
+     the width where even the tight row fits it scrolls, which it was already
+     set up to do, and the auto margin holding the tags right collapses on its
+     own once there is no spare room to hold them against. */
+  .site-nav{ gap:var(--s1); flex-basis:0 }
+
+  /* One step under --t-small's floor, and the last of the three savings the
+     row needs. Fixed rather than fluid because every clamp in the file has
+     bottomed out by this width, so there is nothing left to scale against.
+     Measured: the five tags need 263px, and a 375px screen, which is the SE,
+     leaves them 287px. Below about 350 they scroll instead, as before. */
+  .site-nav a{ font-size:.82rem }
+
+  /* The footer keeps its one row here rather than stacking: brand left, marks
+     held right, strip centred underneath, which is the arrangement every wider
+     screen gets. What changes is the size of the parts, below.
+
+     Measured: at full size the brand is 125px and the five marks 220px, which
+     with the gap between them needs 362px. An SE leaves 343 and a 320 screen
+     leaves 288, so something has to give, and it is shared between the two
+     rather than taken out of either alone. The tap targets keep the 24px floor
+     that makes them targets at all, with room over it. */
+  .site-foot .brand span{ font-size:clamp(.72rem, 3.4vw, 1rem) }
+  .site-foot .brand img{ width:clamp(28px, 8.5vw, 40px) }
+
+  .site-foot .foot-social{
+    --hit  : clamp(1.9rem, 9.4vw, 2.75rem);
+    --mark : clamp(1.05rem, 5.2vw, 1.375rem);
+  }
 }
 
 

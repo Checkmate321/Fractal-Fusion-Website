@@ -30,19 +30,19 @@
 
       <div class="hero-head">
         <span class="label">FTC 27188 &middot; Orlando, Florida</span>
-        <h1>Fusing the future, one build at a time</h1>
+        <h1>Fusing the <span class="mark">future</span>, one build at a time</h1>
         <div class="rule"></div>
         <p class="lede">A rookie team in 2024. Two seasons later, a robot at the
-           <em>FIRST</em> World Championship, plus a written record of how it got there.</p>
-      </div>
+           <em>FIRST</em>  World Championship, plus a written record of how it got there.</p>
 
-      <!-- The buttons are a sibling of the head, not inside it, because on a
-           wide screen the robot is laid over the head and has to stop just
-           short of them. Being its own grid row is what gives it an edge to
-           stop at, and the row gap is the clearance you see above them. -->
-      <div class="hero-actions">
-        <a class="btn" href="sponsors.html">Sponsor the team</a>
-        <a class="btn" href="log.html">Read the build log</a>
+        <!-- Inside the head, so the buttons are in the robot's row and sit above
+             its butter rule rather than below it. The robot is laid over the
+             head, so the buttons carry a z-index of their own to stay on top of
+             the viewer and stay clickable. -->
+        <div class="hero-actions">
+          <a class="btn" href="sponsors.html">Sponsor the team</a>
+          <a class="btn" href="log.html">Read the build log</a>
+        </div>
       </div>
 
       <!-- Sierah, the 2026 Worlds robot. Left empty on purpose: main.js builds
@@ -55,18 +55,21 @@
            lays it over the head. -->
       <div class="hero-stage" id="hero-stage" aria-hidden="true"></div>
 
+    </div>
+  </section>
+
+  <!-- Its own light band rather than a row of the hero. On periwinkle the
+       numbers are navy: butter is type only on navy, never on light. -->
+  <section class="band band--light stats">
+    <div class="wrap">
       <div class="statrow">
         <div>
           <div class="stat">2,000+</div>
-          <span class="label">People reached</span>
+          <span class="label">Reached</span>
         </div>
         <div>
           <div class="stat">17,000+</div>
-          <span class="label">Social views</span>
-        </div>
-        <div>
-          <div class="stat">2024</div>
-          <span class="label">Rookie year</span>
+          <span class="label">Views</span>
         </div>
         <div>
           <!-- BIOBUZZ reveal, Saturday 12 September 2026 at 12:00 pm ET, per
@@ -74,7 +77,7 @@
                main.js counts down from it, and with no script the element
                still reads as the date it points at. -->
           <time class="stat stat--timer" id="kickoff" datetime="2026-09-12T12:00:00-04:00">Sep 12</time>
-          <span class="label">Until FTC kickoff</span>
+          <span class="label">To kickoff</span>
         </div>
       </div>
     </div>
@@ -131,7 +134,7 @@
           <span class="label">Mission log</span>
           <h2>What we are working on</h2>
         </div>
-        <a class="btn btn--ghost" href="log.html">Read the whole log</a>
+        <a class="btn btn--ghost" href="log.html">Read the mission log</a>
       </div>
 
       <div class="log-grid" id="home-log">

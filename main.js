@@ -709,6 +709,54 @@ initForms();
 renderSponsors();
 
 
+/* ==========================================================================
+   DIALOGS
+   [data-dialog="id"] opens the <dialog> with that id, [data-dialog-close]
+   closes the one it sits in. The element handles the rest itself: the
+   backdrop, Escape, the focus trap, and returning focus to the button that
+   opened it. One listener on the document, so markup added later works too.
+   ========================================================================== */
+
+function initDialogs() {
+  document.addEventListener('click', function (ev) {
+    var el = ev.target;
+    if (!el || !el.closest) return;
+
+    var closer = el.closest('[data-dialog-close]');
+    if (closer) {
+      var host = closer.closest('dialog');
+      if (host) host.close();
+      return;                        /* a link in here still follows its href */
+    }
+
+    var opener = el.closest('[data-dialog]');
+    if (!opener) return;
+
+    var dlg = document.getElementById(opener.getAttribute('data-dialog'));
+    if (!dlg) return;
+
+    ev.preventDefault();
+    if (dlg.showModal) dlg.showModal();
+    else dlg.setAttribute('open', '');      /* no modal support: still readable */
+  });
+
+  /* Click outside to dismiss. The backdrop is not its own element, so this
+     goes by geometry rather than by target: a click on the dialog's own
+     padding is inside the box and must not close it. detail is 0 for a click
+     synthesised by the keyboard, which has no coordinates to test. */
+  document.querySelectorAll('dialog').forEach(function (dlg) {
+    dlg.addEventListener('click', function (ev) {
+      if (!ev.detail) return;
+      var r = dlg.getBoundingClientRect();
+      if (ev.clientX < r.left || ev.clientX > r.right ||
+          ev.clientY < r.top  || ev.clientY > r.bottom) dlg.close();
+    });
+  });
+}
+
+initDialogs();
+
+
 /* --------------------------------------------------------------------------
    HERO ROBOT, Sierah in 3D
 
@@ -752,14 +800,31 @@ function wantsRobot() {
    walks backwards as the window narrows: 100% of the framing distance at 1024px
    and up, 155% by the time the window is phone width, straight line between.
    The robot ends up occupying about the same share of the screen either way. */
-function restingRadius() {
+function restingRadius(mv) {
   var w = window.innerWidth;
   var t = Math.min(1, Math.max(0, (1024 - w) / (1024 - 390)));
-  return Math.round(100 + t * 55) + '%';
+  var pct = 100 + t * 55;
+
+  /* On a narrow window the canvas is grown taller than the band it sits in, so
+     that a lifted robot still covers the band's full height. A model-viewer
+     frames its model against the height it is given, so that extra height would
+     come straight back out as a bigger robot. Dividing the distance by the same
+     ratio cancels it, and reading both heights off the elements keeps the CSS
+     the only place the lift is written down. */
+  if (mv && mv.parentNode) {
+    var band = mv.parentNode.clientHeight;
+    if (band > 0) pct *= mv.clientHeight / band;
+  }
+  return Math.round(pct) + '%';
 }
 
-function restingOrbit() {
-  return '35deg 72deg ' + restingRadius();
+/* 215deg, not 35deg. The intake and the Limelight are the front of this robot
+   and they sit at 180deg; 35deg was looking at the flat panel on the back of
+   the chassis. 215 keeps the same three quarter angle the opening view always
+   had, just taken round the front: 180 for the front, plus the 35 that turns it
+   off square. */
+function restingOrbit(mv) {
+  return '215deg 72deg ' + restingRadius(mv);
 }
 
 function buildRobot(stage) {
@@ -791,7 +856,7 @@ function buildRobot(stage) {
   });
 
   window.addEventListener('resize', function () {
-    if (!touched) mv.cameraOrbit = restingOrbit();
+    if (!touched) mv.cameraOrbit = restingOrbit(mv);
   });
 
   mv.setAttribute('camera-controls', '');
@@ -814,7 +879,6 @@ function buildRobot(stage) {
      view: round the front, slightly above, at whatever distance suits the
      window. */
   mv.setAttribute('field-of-view', '24deg');
-  mv.setAttribute('camera-orbit', restingOrbit());
 
   /* Polar runs 5deg to 175deg, very nearly pole to pole: straight down onto the
      top plate at one end and up underneath the drivetrain at the other. It
@@ -849,6 +913,12 @@ function buildRobot(stage) {
   });
 
   stage.appendChild(mv);
+
+  /* Only now, with the element in the document: the resting distance divides
+     out the canvas to band height ratio, and neither height can be measured
+     while the element is still detached. Setting it before appending left the
+     ratio at 1 and the robot oversized on every narrow window. */
+  mv.setAttribute('camera-orbit', restingOrbit(mv));
 }
 
 function initHeroRobot() {
@@ -893,31 +963,57 @@ initHeroRobot();
    One delegated listener on the document, in the capture phase. Delegated
    because the header and footer arrive by fetch, so anything bound to their
    links directly would miss every one of them. Capture because a handler
-   further in may stop propagation, and because a link click starts tearing
-   the page down straight after.
+   further in may stop propagation.
+
+   The catch that is not obvious: nearly everything on this site is a link, and
+   a link unloads the page. The sample is 43ms and a local server answers in
+   less, so the header nav, the brand, and the hero buttons all played and were
+   cut off before they were audible. Anything that is about to leave the page
+   in this tab is therefore held back until the sample has finished. See
+   holdFor() for the many clicks that must not be held.
    -------------------------------------------------------------------------- */
 
 var CLICK_SRC = 'files/audio/click.wav';
 
-/* The file peaks at full scale, so it is loud played straight. This is the
-   one number to turn if it is still too much, or 1 to hear it as recorded. */
-var CLICK_VOLUME = 0.45;
+/* The file peaks at full scale, so it is loud played straight. 0.1 is the level
+   you had already settled on for this sample elsewhere. One number to turn. */
+var CLICK_VOLUME = 0.1;
 
 /* Clicked again before the last one has finished, an element playing from the
    top cuts itself off. A handful of copies take turns instead, so a fast run
    of clicks reads as a fast run of clicks. */
 var CLICK_VOICES = 4;
 
-/* What counts as clickable. Text fields are deliberately absent: putting a
-   cursor in a field is not the same gesture as pressing something. */
-var CLICK_TARGETS = 'a[href], button, [role="button"], summary, input[type="submit"]';
+/* Ceiling on how long a navigation waits for the sound. Normally 'ended'
+   arrives first and this never fires; it is here so a missing or slow file
+   cannot leave a link feeling broken. */
+var CLICK_HOLD_MAX = 150;
+
+/* What counts as clickable. Text fields and their labels are deliberately
+   absent: putting a cursor in a field is not the same gesture as pressing
+   something. The honeypot checkbox is hidden from people, so it is out too. */
+var CLICK_TARGETS = 'a[href], button, select, summary, [role="button"], input[type="submit"]';
+
+/* Whether this click is about to unload the page, so the sound needs holding.
+   Every branch here is a click that must be left completely alone. */
+function holdFor(ev, el) {
+  if (ev.defaultPrevented) return null;          /* someone else owns this click */
+  if (el.tagName !== 'A' || !el.href) return null;
+  if (ev.button) return null;                    /* middle and right go elsewhere */
+  if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return null;   /* new tab, window, download */
+  if (el.hasAttribute('download')) return null;
+  if (el.target && el.target !== '_self') return null;   /* _blank keeps this page alive */
+
+  var url = new URL(el.href, location.href);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;  /* mailto:, tel: */
+
+  /* A hash on the page we are already on scrolls, it does not unload. */
+  if (url.href.split('#')[0] === location.href.split('#')[0]) return null;
+
+  return el.href;
+}
 
 function initClickSound() {
-  /* An unasked for noise is sensory feedback, so it answers to the same
-     setting the animations do. Delete these two lines to always play. */
-  if (window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
   var voices = [];
   var next = 0;
 
@@ -931,15 +1027,33 @@ function initClickSound() {
   document.addEventListener('click', function (ev) {
     var el = ev.target;
     if (!el || !el.closest) return;          /* document itself, or a stray node */
-    if (!el.closest(CLICK_TARGETS)) return;
+
+    el = el.closest(CLICK_TARGETS);
+    if (!el) return;
 
     var v = voices[next];
     next = (next + 1) % voices.length;
 
+    var href = holdFor(ev, el);
+    if (href) ev.preventDefault();
+
     v.currentTime = 0;
     /* Rejects when the file is missing, or when the browser does not count the
-       gesture as trusted. Neither is worth an unhandled rejection in console. */
-    v.play().catch(function () {});
+       gesture as trusted. Either way a held link still has to go. */
+    v.play().catch(function () { if (href) location.href = href; });
+
+    if (!href) return;
+
+    /* Leave the moment the sample is done, or at the ceiling, whichever is
+       first, and only ever once. */
+    var gone = false;
+    function go() {
+      if (gone) return;
+      gone = true;
+      location.href = href;
+    }
+    v.addEventListener('ended', go, { once: true });
+    setTimeout(go, CLICK_HOLD_MAX);
   }, true);
 }
 

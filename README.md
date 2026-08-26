@@ -168,11 +168,13 @@ laid over the words. Same at every width; a phone gets a narrower version of the
 identical band, flush under the header, with the butter rule closing it off at
 the bottom.
 
-Row one ending where row two begins is what bounds the robot: it can never reach
-the buttons, and the row gap is the clearance above them. Nothing measures the
-buttons. The stage also carries a negative top margin equal to the hero's top
-padding, with the same amount added back to its `min-height`, so the band runs
-right up under the header without moving the buttons down.
+The band is edged by a butter rule at each end, the header's at the top and the
+stage's own at the bottom, so the hero drops **both** of its own pads whenever
+the stage is filled (`:has(.hero-stage:not(:empty))`): a pad outside either rule
+reads as a navy gutter beside a border. The words then carry their own small top
+pad instead, so the band still starts flush under the header while the label
+keeps some air beneath the rule. Putting that pad on the hero instead would push
+the band down with it and put the gap straight back.
 
 The robot sits right of the words without the camera being touched: the
 `model-viewer` inside the stage is 170% wide and slid sideways, and the stage
@@ -182,7 +184,30 @@ screen as it turns instead of spinning on the spot, against 0px drift for this.
 
 The slide is `translateX(30vw)`, a proportion of the window rather than a
 distance, so the robot's middle sits at 80% across at every size instead of
-drifting as the window changes. Measured, it holds 80% from 320px to 1920px. A
+drifting as the window changes.
+
+The lift is in the canvas's insets, `top: calc(-2 * LIFT); bottom: 0`, and not
+in the transform. That distinction is the whole point: the canvas is **grown
+upward from the band's bottom edge**, not moved upward. Twice the lift added
+above with the bottom pinned puts the canvas middle one lift higher while its
+bottom edge stays on the butter rule, so a zoomed in robot still reaches the
+bottom of the band. Translating it, which is what this used to do, carried the
+bottom edge up too and left a strip of bare navy behind the buttons on every
+narrow window.
+
+Growing the canvas makes it taller than the band, and a model-viewer frames its
+model against the height it is given, so the robot would come back out bigger by
+the same ratio. `restingRadius()` divides that ratio out, which is why it takes
+the element: it reads `mv.clientHeight / band.clientHeight` at runtime, so the
+CSS stays the only place the lift is written down. It has to be called **after**
+the element is in the document, or both heights read as zero and the ratio
+silently stays 1.
+
+The lift is zero at 1024px and wider. Below that the band is only as tall as the
+words while the robot inside it has been walked back by the camera, so a centred
+robot leaves a hole above itself and sits on the lede below. Raising it fills the
+hole and uncovers the lede at the same time, because the space it moves into is
+the short right hand end of the first heading lines, which is empty anyway. Measured, it holds 80% from 320px to 1920px. A
 little of the robot passes the right edge on the narrowest screens, which is
 intended; the band is a full bleed crop at both ends anyway.
 
@@ -199,6 +224,11 @@ inside the chassis looking at the backs of panels, which reads as a bug rather
 than a feature; at 300% it is small but still legibly a robot. Nothing stops it
 horizontally at the near stop, because the stage is a full bleed `100vw` row.
 What stops it vertically is the row below, as described under **The band**.
+
+The opening view is **215deg**, not 35deg. The intake and the Limelight are the
+front of this robot and they sit at 180deg, so 35deg was pointed at the flat
+panel on the back of the chassis. 215 is 180 for the front plus the 35 that
+turns it off square, which keeps the three quarter angle the view always had.
 
 **The resting distance scales with the window**, in `restingRadius()`: 100% of
 the framing distance at 1024px and up, walking back to 155% by phone width, a
