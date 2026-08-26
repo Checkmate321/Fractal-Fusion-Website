@@ -1060,32 +1060,61 @@ a.card:active{ transform:translateY(0) }
   margin-top:var(--s3);
 }
 
+/* One box for every logo, whatever shape the file happens to be. The three
+   assets run from a square badge to a tall shield, and a shared box is what
+   makes them read at the same weight instead of the tallest one dominating.
+   No frame around it: the logos are already self contained marks, and boxing
+   them only added a second rectangle competing with the first. */
 .sponsor-tile{
-  display:grid; place-items:center;
-  padding:var(--s3);
-  border:1px solid var(--hair);
-  border-radius:var(--radius-lg);
-  min-height:7rem;
+  --logo-h : clamp(4.25rem, 9vw, 6rem);
+
+  display:grid;
+  /* Centred vertically, hard left horizontally. Centring on both axes left
+     the mark indented from the sentence beneath it once the row stacked. The
+     box stays wider than it is tall so a horizontal wordmark, which is what
+     most sponsors send, has somewhere to go. */
+  place-items:center start;
+  flex:0 0 auto;
+  inline-size:clamp(5rem, 11vw, 7.5rem);
+  block-size:var(--logo-h);
 }
+
 /* Sponsor logos are dark ink on transparency, which is how brand assets
-   normally arrive. They need a light ground, so keep this wall on one. */
+   normally arrive. They need a light ground, so keep this list on one. */
 .sponsor-logo{
-  max-height:5rem; width:auto; max-width:100%;
+  /* The cap is the box's own height as a length, not a percentage. A
+     percentage here is resolved against a containing block the image does not
+     have, so a tall logo simply runs past the box and into the heading. */
+  max-block-size:var(--logo-h);
+  max-inline-size:100%;
+  inline-size:auto;
+  block-size:auto;
   object-fit:contain;
 }
 
-.sponsor-list{ display:grid; gap:var(--s4); margin-top:var(--s4) }
+a.sponsor-tile img{ transition:transform .25s ease }
+:is(a.sponsor-tile:hover, a.sponsor-tile:active, a.sponsor-tile:focus-visible) img{
+  transform:scale(1.05);
+}
+
+.sponsor-list{ display:grid; gap:var(--s5); margin-top:var(--s4) }
+
+/* Mark then words, side by side while there is room for both and stacked the
+   moment there is not. The basis sits on the text rather than the logo, so
+   the row breaks when the sentence would be squeezed, which is the thing
+   worth protecting. A logo needs 9rem; a sentence needs a great deal more. */
 .sponsor-row{
-  display:grid; gap:var(--s3) var(--s4);
-  grid-template-columns:repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  display:flex;
+  flex-wrap:wrap;
   align-items:center;
-  padding-bottom:var(--s4);
+  gap:var(--s3) var(--s4);
+  padding-bottom:var(--s5);
   border-bottom:1px solid var(--hair);
 }
 .sponsor-row:last-child{ border-bottom:0; padding-bottom:0 }
+.sponsor-row > div{ flex:1 1 22rem; min-width:0 }
 .sponsor-row h3{ margin-bottom:var(--s2) }
-.sponsor-row p{ color:var(--mute) }
-.sponsor-row .sponsor-tile{ max-width:16rem }
+.sponsor-row p{ color:var(--mute); max-width:56ch }
 
 
 /* ==========================================================================
@@ -1259,7 +1288,7 @@ a.res-card:active{ transform:translateY(0); border-color:currentColor }
    SEASON RECORD TABLE
    ========================================================================== */
 
-.season{ margin-top:var(--s5) }
+.season{ margin-top:var(--s4) }
 .season-head{ display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s2) var(--s3) }
 .season-head h3{ font-size:var(--t-h3); font-stretch:112% }
 
@@ -1267,9 +1296,22 @@ a.res-card:active{ transform:translateY(0); border-color:currentColor }
    box and the page stays put. */
 .tablewrap{ overflow-x:auto; margin-top:var(--s3) }
 
-.rec{ border-collapse:collapse; width:100%; min-width:34rem; font-size:var(--t-small) }
+/* Fixed layout, so the two season tables agree on where their columns are.
+   Auto layout sized each one to its own longest cell and the headings did not
+   line up down the page. */
+.rec{
+  border-collapse:collapse; table-layout:fixed;
+  width:100%; min-width:40rem; font-size:var(--t-small);
+}
+.rec :is(th,td):nth-child(1){ width:30% }
+.rec :is(th,td):nth-child(2){ width:26% }
+.rec :is(th,td):nth-child(3){ width:12% }
+
+/* The three league meets of a season sit on one row, so the rows are few
+   enough to want less air each. The floor width went up with them: the quals
+   and rank cells now carry three values apiece and must not wrap. */
 .rec th,
-.rec td{ text-align:left; padding:var(--s2) var(--s3) var(--s2) 0; border-bottom:1px solid var(--hair); vertical-align:top }
+.rec td{ text-align:left; padding:var(--s1) var(--s3) var(--s1) 0; border-bottom:1px solid var(--hair); vertical-align:top }
 .rec th{
   font-family:var(--mono); font-size:var(--t-label); font-weight:600;
   letter-spacing:.13em; text-transform:uppercase; color:var(--mute);

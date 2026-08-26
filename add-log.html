@@ -82,14 +82,19 @@
           <div class="field">
             <label for="l-topic">Topic</label>
             <select id="l-topic" name="topic" required>
+              <!-- Blank, selected, and first, which is what makes it the
+                   placeholder label option: with required, the select then
+                   counts as missing until somebody chooses. disabled and
+                   hidden keep it out of the open list. -->
+              <option value="" selected disabled hidden></option>
               <option value="CAD">CAD</option>
               <option value="Mechanical">Mechanical</option>
-              <option value="Misc" selected>Misc</option>
+              <option value="Misc">Misc</option>
               <option value="Outreach">Outreach</option>
               <option value="Software">Software</option>
               <option value="Strategy">Strategy</option>
             </select>
-            <span class="hint">Defaults to Misc, so a forgotten dropdown lands in the catch all rather than claiming to be something it is not.</span>
+            <span class="hint">Nothing is picked for you, so an entry cannot claim to be something it is not. Misc is the catch all when none of the others fit.</span>
           </div>
 
           <div class="field">

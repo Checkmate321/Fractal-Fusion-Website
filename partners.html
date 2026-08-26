@@ -25,25 +25,15 @@
 <div id="header"></div>
 
 <main>
-  <section class="page-head">
-    <div class="wrap">
-      <span class="label">Partnership</span>
-      <h1>Three ways to work with us</h1>
-      <div class="rule"></div>
-      <p class="lede">Outreach hosts, other teams, and mentors. Each one has a real ask and a first step that takes less than five minutes.</p>
-    </div>
-  </section>
-
   <section class="band band--dark">
     <div class="wrap">
 
-      <div class="measure routes-intro">
-        <span class="label">The honest version</span>
-        <h2>We would rather ask for something small and specific</h2>
-        <p>Most teams end a page like this with "get in touch", which asks you to
-           volunteer for an obligation nobody has described. So each route below
-           says what we actually want, and the button opens the rest: what you get
-           out of it, and a first step that takes five minutes.</p>
+      <!-- The page's h1. It carries the heading order for everything below it,
+           which is otherwise three h3 route cards and no title at all. The
+           wrapper is reused for its margin: .routes-intro is what held the gap
+           between an opening and the cards before. -->
+      <div class="routes-intro">
+        <h1>Partnership routes</h1>
       </div>
 
       <div class="grid grid--3 routes">
@@ -182,6 +172,11 @@
           <div class="field">
             <label for="p-role">I am a</label>
             <select id="p-role" name="role" required>
+              <!-- Blank, selected, and first, which is what makes it the
+                   placeholder label option: with required, the select then
+                   counts as missing until somebody chooses. disabled and
+                   hidden keep it out of the open list. -->
+              <option value="" selected disabled hidden></option>
               <option value="Outreach host">Somewhere that would like a robot to visit</option>
               <option value="Another team">Another FTC or FRC team</option>
               <option value="Mentor">Mentor, or a potential one</option>
