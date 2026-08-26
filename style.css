@@ -61,7 +61,7 @@
 
 *,*::before,*::after{ box-sizing:border-box }
 
-html{ -webkit-text-size-adjust:100% }
+html{ -webkit-text-size-adjust:100%; scroll-padding-top:calc(var(--header-h) + var(--s2)) }
 
 body{
   margin:0;
@@ -71,7 +71,22 @@ body{
   font-size:var(--t-body);
   line-height:1.62;
   -webkit-font-smoothing:antialiased;
+
+  /* Column layout so the footer can be held on the bottom edge. dvh, not vh,
+     or mobile browser chrome pushes the footer below the fold on load. */
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
 }
+
+/* The footer on the bottom, always. Short pages, which is every placeholder
+   page right now, otherwise ended the footer 500px up the screen with bare
+   body colour under it. main absorbs the slack, and the section that ends the
+   page stretches into it, so the last band carries its own ground all the way
+   down rather than handing the last 500px to whatever body happens to be. */
+main{ flex:1 0 auto; display:flex; flex-direction:column }
+main > :last-child{ flex:1 0 auto }
 
 img{ max-width:100%; height:auto; display:block }
 
@@ -194,7 +209,7 @@ a.card:hover{ transform:translateY(-2px) }
   padding:.875rem 1.5rem;
   color:inherit;
   background:var(--btn-bg);
-  border:1px solid currentColor;
+  border: 1.5px solid currentColor;
   border-radius:0 1rem 0 1rem;     /* only the two live corners ever show it */
   clip-path:polygon(
     var(--notch) 0,
@@ -252,10 +267,22 @@ a.card:hover{ transform:translateY(-2px) }
    when there is no longer room beside the wordmark. No breakpoint needed.
    ========================================================================== */
 
-#header{ min-height:var(--header-h) }   /* reserve space before the fetch lands */
-
-.site-head{
+/* The bar is pinned by its wrapper, not by .site-head itself. A sticky element
+   only sticks while its own containing block is on screen, and .site-head's
+   containing block is this one-bar-tall div, so sticking it there let the bar
+   scroll straight off once you passed its own height. Sticking the wrapper
+   instead gives it body as its containing block: pinned for the whole scroll.
+   Sticky also keeps the bar in flow, so it reserves its own height: no offset
+   to keep in sync, and no jump when the nav wraps to a second line. */
+#header{
   position:sticky; top:0; z-index:50;
+  min-height:var(--header-h);           /* reserve space before the fetch lands */
+}
+
+/* Opaque, so the page genuinely disappears underneath rather than showing
+   through. Every ground this bar can sit over is one of the two palette
+   colours, so a flat navy fill is all it needs. */
+.site-head{
   background:var(--dark); color:var(--light);
   min-height:var(--header-h);
   display:flex; align-items:center;
@@ -267,7 +294,15 @@ a.card:hover{ transform:translateY(-2px) }
 }
 
 .brand{ display:flex; align-items:center; gap:.625rem; text-decoration:none; color:var(--light); flex:0 0 auto }
-.brand img{ width:clamp(32px, 3.4vw, 40px); height:auto }
+.brand img{ width:clamp(32px, 3.4vw, 40px); height:auto; transition:transform .3s ease }
+.brand:hover img{ transform:rotate(12deg) }
+
+/* The bar carries the mark alone now, so it can afford to be bigger. Capped at
+   52px because 52 plus the bar's padding is 84px, the ceiling of --header-h, so
+   the reserved height and the real bar agree and nothing shifts when the fetch
+   lands. On a short viewport --header-h computes below its ceiling and the bar
+   then takes the logo's height instead, which is the one case it grows. */
+.site-head .brand img{ width:clamp(40px, 4.2vw, 52px) }
 .brand span{
   font-weight:800; font-stretch:120%; font-size:clamp(.9rem, 1.1vw, 1rem);
   text-transform:uppercase; letter-spacing:.01em; line-height:1.05;
@@ -306,17 +341,61 @@ a.card:hover{ transform:translateY(-2px) }
 .site-foot a{ color:var(--mute); text-decoration:none }
 .site-foot a:hover{ color:var(--c1) }
 
+/* The wordmark trades its two colours on hover: Fractal takes the butter,
+   Fusion takes the periwinkle. Stated on both halves rather than letting
+   Fractal ride the footer link hover above, so the swap survives a change to
+   that rule. One anchor holds the mark and the wordmark, so hovering either
+   one runs the swap, and the mark's tilt comes along with it. */
+.site-foot .brand:hover span{ color:var(--c1) }
+.site-foot .brand:hover em  { color:var(--light) }
+
 .foot-top{
   display:flex; flex-wrap:wrap;
   gap:var(--s3) var(--s5);
-  align-items:flex-start; justify-content:space-between;
+  align-items:center; justify-content:space-between;
 }
-.foot-brand p{ color:var(--mute); font-size:var(--t-small); margin-top:var(--s2); max-width:34ch }
 
+/* Brand marks, not words. Every link is a --hit box, finger sized, holding a
+   quiet --mark glyph. Each one paints its mark as a mask filled with
+   currentColor: the shape lives in files/logos, the colour stays in the
+   palette, so they inherit the mute-to-butter hover set above and nothing is
+   baked into the asset. */
 .foot-social{
-  display:flex; flex-wrap:wrap; gap:var(--s2) var(--s3);
-  font-size:var(--t-small); font-weight:600;
+  --mark : 1.375rem;              /* the glyph */
+  --hit  : 2.75rem;               /* the tap target around it */
+
+  display:flex; flex-wrap:wrap; align-items:center;
+  gap:var(--s1);
+  min-width:0;                    /* lets the row wrap instead of running past the wrap */
 }
+.foot-social .soc{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:var(--hit); min-height:var(--hit);
+}
+.foot-social .soc::before{
+  content:"";
+  width:var(--mark); height:var(--mark);
+  background:currentColor;
+  -webkit-mask:var(--soc) center / contain no-repeat;
+          mask:var(--soc) center / contain no-repeat;
+}
+
+/* One line per mark. Paths are relative to this stylesheet, which sits beside
+   the folder, so they hold on every page. */
+.soc--instagram{ --soc:url("files/logos/instagramLogo.svg") }
+.soc--tiktok   { --soc:url("files/logos/tiktokLogo.svg") }
+.soc--youtube  { --soc:url("files/logos/youtubeLogo.svg") }
+.soc--ftcscout { --soc:url("files/logos/ftcscoutLogo.svg") }
+.soc--email    { --soc:url("files/logos/emailIcon.svg") }
+
+/* The binoculars are drawn tall and narrow, so at a shared height they read
+   lighter than the marks beside them. Widening the box is the wrong lever,
+   that would break the rhythm, so the glyph itself grows instead. */
+.soc--ftcscout::before{ --mark:1.625rem }
+
+/* Pull back the first box's slack so the leading mark, not the empty half of
+   its target, lines up with the text edge once the row wraps to its own line. */
+.foot-social .soc:first-child{ margin-left:calc((var(--mark) - var(--hit)) / 2) }
 
 .foot-bot{
   margin-top:var(--s4); padding-top:var(--s3);
@@ -365,6 +444,92 @@ a.card:hover{ transform:translateY(-2px) }
 .grid{ display:grid; gap:var(--s3) }
 .grid--3{ grid-template-columns:repeat(auto-fit, minmax(min(100%, 16rem), 1fr)) }
 .grid--2{ grid-template-columns:repeat(auto-fit, minmax(min(100%, 20rem), 1fr)) }
+
+
+/* ==========================================================================
+   ENGINEERING LOG
+   ========================================================================== */
+
+.log-bar{
+  display:flex; flex-wrap:wrap; align-items:baseline;
+  gap:var(--s2) var(--s3);
+  margin-bottom:var(--s4);
+}
+
+.log-filters{ display:flex; flex-wrap:wrap; gap:var(--s1) var(--s2) }
+.log-filters button{
+  font-family:var(--font);
+  font-size:var(--t-small);
+  font-weight:600;
+  line-height:1;
+  padding:.55rem .9rem;
+  border:1px solid var(--hair);
+  border-radius:var(--radius);
+  background:transparent;
+  color:inherit;
+  cursor:pointer;
+  transition:background-color .14s ease, color .14s ease;
+}
+.log-filters button:hover{ border-color:currentColor }
+/* Active state inverts the ground, the same rule the cards follow. */
+.log-filters button.is-active{ background:var(--dark); color:var(--light); border-color:var(--dark) }
+
+.log-count{ margin-left:auto }
+
+.log-grid{
+  display:grid;
+  gap:var(--s3);
+  grid-template-columns:repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+.log-card{ padding:0; overflow:hidden; display:flex; flex-direction:column }
+.log-thumb{ width:100%; aspect-ratio:8 / 5; object-fit:cover }
+.log-card .log-meta{ padding:var(--s3) var(--s3) 0 }
+.log-card h3{ padding:var(--s2) var(--s3) 0 }
+/* Grid rows stretch to equal height, so let the summary absorb the slack.
+   Without this an entry with no thumbnail leaves a gap under its text. */
+.log-summary{ padding:var(--s2) var(--s3) var(--s3); color:var(--mute);
+  font-size:var(--t-small); flex:1 1 auto }
+.log-card .sample{ margin:0 var(--s3) var(--s3) }
+
+/* Loud enough that nobody ships invented history by accident. */
+.sample{
+  display:inline-block;
+  font-family:var(--mono);
+  font-size:var(--t-label);
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  background:var(--c1);
+  color:var(--dark);
+  padding:.3rem .55rem;
+  border-radius:2px;
+}
+.page-head .sample{ margin-top:var(--s3) }
+
+
+/* ---- single entry ---- */
+
+.entry-body{ font-size:var(--t-lede); line-height:1.68 }
+.entry-body p{ margin-bottom:var(--s3) }
+
+.entry-figure{ margin:var(--s5) 0 0; max-width:var(--wrap-text) }
+.entry-figure img{ width:100%; border-radius:var(--radius) }
+.entry-figure figcaption{ margin-top:var(--s2) }
+
+.entry-nav{
+  display:flex; flex-wrap:wrap; gap:var(--s3);
+  justify-content:space-between;
+  margin-top:var(--s6); padding-top:var(--s3);
+  border-top:1px solid var(--hair);
+}
+.entry-step{
+  display:grid; gap:.35rem;
+  text-decoration:none; color:inherit;
+  max-width:26rem; font-weight:600;
+}
+.entry-step:hover span:last-child{ text-decoration:underline; text-underline-offset:3px }
+.entry-step--next{ text-align:right; margin-left:auto }
 
 
 /* ==========================================================================

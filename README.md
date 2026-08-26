@@ -98,7 +98,9 @@ fetch resolves.
 
 ## Adding a log entry
 
-See `ADDING-A-LOG-ENTRY.md` (Chunk 2).
+See [ADDING-A-LOG-ENTRY.md](ADDING-A-LOG-ENTRY.md). One object appended to
+`data/log.json` produces a card, an entry page and a filter count. No HTML is
+ever edited.
 
 ---
 

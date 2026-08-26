@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" role="img" aria-label="Placeholder image">
+  <rect width="1600" height="1000" fill="#2E3A55"/>
+  <g fill="none" stroke="#DCE7F7" stroke-opacity=".18" stroke-width="2">
+    <path d="M100 0 V1000"/>
+    <path d="M200 0 V1000"/>
+    <path d="M300 0 V1000"/>
+    <path d="M400 0 V1000"/>
+    <path d="M500 0 V1000"/>
+    <path d="M600 0 V1000"/>
+    <path d="M700 0 V1000"/>
+    <path d="M800 0 V1000"/>
+    <path d="M900 0 V1000"/>
+    <path d="M1000 0 V1000"/>
+    <path d="M1100 0 V1000"/>
+    <path d="M1200 0 V1000"/>
+    <path d="M1300 0 V1000"/>
+    <path d="M1400 0 V1000"/>
+    <path d="M1500 0 V1000"/>
+    <path d="M0 100 H1600"/>
+    <path d="M0 200 H1600"/>
+    <path d="M0 300 H1600"/>
+    <path d="M0 400 H1600"/>
+    <path d="M0 500 H1600"/>
+    <path d="M0 600 H1600"/>
+    <path d="M0 700 H1600"/>
+    <path d="M0 800 H1600"/>
+    <path d="M0 900 H1600"/>
+  </g>
+  <rect x="60" y="60" width="1480" height="880" fill="none" stroke="#FBEFA1" stroke-width="4" stroke-dasharray="18 14"/>
+  <text x="800" y="480" text-anchor="middle" fill="#FBEFA1" font-family="monospace" font-size="46" letter-spacing="6">PLACEHOLDER IMAGE</text>
+  <text x="800" y="556" text-anchor="middle" fill="#DCE7F7" fill-opacity=".75" font-family="monospace" font-size="30">2026-01-18-odometry-drift / 01</text>
+</svg>
