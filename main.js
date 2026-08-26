@@ -88,8 +88,8 @@ window.addEventListener('resize', function () {
 });
 
 
-include('header', 'header.html').then(markActiveNav);
-include('footer', 'footer.html');
+include('header', '/header.html').then(markActiveNav);
+include('footer', '/footer.html');
 
 
 /* --------------------------------------------------------------------------
@@ -353,6 +353,52 @@ function renderSponsors() {
       });
     });
 }
+
+
+/* --------------------------------------------------------------------------
+   RESOURCES
+   -------------------------------------------------------------------------- */
+
+var RESOURCE_URL = 'data/resources.json';
+
+function resourceHTML(r) {
+  var live = r.href && !r.placeholder;
+
+  var inner =
+    '<span class="res-type">' + esc(r.type) + '</span>' +
+    '<h3>' + esc(r.title) + '</h3>' +
+    '<p class="res-summary">' + esc(r.summary) + '</p>' +
+    '<span class="res-meta label">' + esc(r.meta || '') + '</span>';
+
+  if (!live) {
+    return '<div class="card card--line res-card is-pending">' + inner + '</div>';
+  }
+
+  /* download tells the browser to save the file rather than try to display it. */
+  return '<a class="card card--line res-card" href="' + esc(r.href) + '"' +
+         (r.download ? ' download' : ' rel="noopener"') + '>' + inner + '</a>';
+}
+
+function renderResources() {
+  var host = document.getElementById('res-grid');
+  if (!host) return;
+
+  fetch(RESOURCE_URL)
+    .then(function (res) {
+      if (!res.ok) throw new Error(RESOURCE_URL + ' returned ' + res.status);
+      return res.json();
+    })
+    .then(function (list) {
+      host.innerHTML = list.map(resourceHTML).join('');
+    })
+    .catch(function (err) {
+      console.error('[resources]', err);
+      host.innerHTML = '<div class="todo">The resource list could not be loaded. ' +
+        'Check data/resources.json for a missing or extra comma.</div>';
+    });
+}
+
+renderResources();
 
 
 /* --------------------------------------------------------------------------

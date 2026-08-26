@@ -1,2 +1,14 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Never let line ending normalisation touch a binary. A .glb rewritten as
+# text is silently corrupted and the failure only shows up on download.
+*.glb  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.pdf  binary
+*.step binary
+*.stl  binary

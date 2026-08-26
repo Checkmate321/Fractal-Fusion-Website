@@ -27,7 +27,8 @@ Then open <http://localhost:8000>.
 ```
 index.html  log.html  entry.html          the pages
 resources.html  sponsors.html
-partners.html  about.html
+partners.html  about.html  404.html
+sitemap.xml  robots.txt
 
 header.html  footer.html                  injected into every page by main.js
 style.css                                 the only stylesheet
@@ -106,6 +107,15 @@ means editing both**. Say the word and the marquee can read from the same JSON.
 Every supplied logo is dark ink on transparency, so the wall belongs on a light
 band. Do not move it onto navy.
 
+## Resources
+
+`data/resources.json` drives `resources.html`. An entry with `"placeholder": true`
+or an empty `href` renders as a non clickable card marked "in progress", so the
+page can advertise work that is coming without offering a dead link.
+
+The three robot models in `files/CAD/` are real downloads. `.gitattributes` marks
+`.glb` as binary so line ending normalisation can never corrupt them.
+
 ## Adding a log entry
 
 See [ADDING-A-LOG-ENTRY.md](ADDING-A-LOG-ENTRY.md). One object appended to
@@ -131,11 +141,30 @@ ever edited.
 
 ## Build order
 
-1. Done. Foundation: structure, tokens, header and footer, page shells
+All eight chunks are done.
+
+1. Foundation: structure, tokens, header and footer, page shells
 2. Mission log: `data/log.json`, card grid, filters, entry pages
-3. Intake pipeline: Google Form to transcriber to repo
-4. Done. Landing page
-5. Done. Sponsors
+3. Intake pipeline: see `GOOGLE-FORM.md`
+4. Landing page
+5. Sponsors
 6. Partners
-7. Resources
-8. About, meta, sitemap, ship
+7. Resources: `data/resources.json`, including the three robot GLB files
+8. About, 404, sitemap, robots.txt
+
+## Deploying
+
+Static files, no build step. Point Cloudflare Pages (or Netlify, or GitHub Pages)
+at the repo with **no build command** and the root as the output directory, then
+attach `fractalfusion.team`.
+
+Two things to set on the host:
+
+* the 404 page is `404.html`
+* the largest file is `files/CAD/26Worlds.glb` at about 10.5 MB, comfortably under
+  Cloudflare Pages' 25 MB per file limit
+
+**The site assumes it is served from the root of a domain.** `header.html`,
+`footer.html` and their links are root relative, so the 404 page still works when
+it is served in place of a deep path. Hosting the site in a subfolder would
+require making those relative again.

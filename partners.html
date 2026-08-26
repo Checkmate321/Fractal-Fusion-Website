@@ -36,7 +36,150 @@
 
   <section class="band band--light">
     <div class="wrap">
-      <div class="todo">CHUNK 6. Three tracks, one form with an I am a selector.</div>
+      <div class="measure">
+        <span class="label">The honest version</span>
+        <h2>We would rather ask for something small and specific</h2>
+        <p>Most teams end a page like this with "get in touch", which asks you to
+           volunteer for an obligation nobody has described. So each of the three
+           routes below says what we actually want, what you get out of it, and a
+           first step that takes under an hour.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--dark">
+    <div class="wrap">
+
+      <article class="track">
+        <div class="track-num label">Route one</div>
+        <div class="track-body">
+          <h3>Mentors</h3>
+          <p class="lede">Engineers, machinists, programmers, and anyone who has shipped
+             something physical under a deadline.</p>
+          <dl class="track-dl">
+            <dt>What we are asking</dt>
+            <dd>Roughly two hours a week between September and February, in person in
+                Orlando or over video. Less is genuinely fine. Several of the most
+                useful conversations we have had lasted forty minutes.</dd>
+            <dt>What we are short on</dt>
+            <dd>Machining and fabrication, control theory, and anyone who has run a
+                real engineering design review and can teach us to run ours properly.</dd>
+            <dt>What you get</dt>
+            <dd>Students who write things down, turn up, and will take your critique
+                seriously. Everything we do is documented in the
+                <a class="lnk" href="log.html">log</a>, so you can see how we work
+                before you commit to anything.</dd>
+            <dt>First step</dt>
+            <dd><strong>One design review, forty five minutes, over video.</strong>
+                We show you what we are building, you tell us what is wrong with it.
+                If it is not for you, that is a complete and useful contribution and
+                we will say thank you and mean it.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="track">
+        <div class="track-num label">Route two</div>
+        <div class="track-body">
+          <h3>Other teams</h3>
+          <p class="lede">Rookie teams, Florida teams, and anyone who wants to scrimmage.</p>
+          <dl class="track-dl">
+            <dt>What we are asking</dt>
+            <dd>Nothing. This one runs the other way.</dd>
+            <dt>What we offer</dt>
+            <dd>Answers to specific questions, our CAD and code on the
+                <a class="lnk" href="resources.html">resources page</a>, practice
+                matches, and help getting a first robot moving. We were a rookie team
+                in 2024 and remember exactly which parts were confusing.</dd>
+            <dt>What we get</dt>
+            <dd>Better competition, and the only reliable way to find out whether we
+                actually understand something is to try to explain it.</dd>
+            <dt>First step</dt>
+            <dd><strong>Ask us one question.</strong> Use the form, or send a message
+                on Instagram. There is no wrong question and we would rather have it
+                early than watch you lose a month to it.</dd>
+          </dl>
+        </div>
+      </article>
+
+      <article class="track">
+        <div class="track-num label">Route three</div>
+        <div class="track-body">
+          <h3>Outreach hosts</h3>
+          <p class="lede">Schools, libraries, scout troops, STEM nights, community events.</p>
+          <dl class="track-dl">
+            <dt>What we are asking</dt>
+            <dd>An invitation. We come to you.</dd>
+            <dt>What a visit looks like</dt>
+            <dd>We bring a competition robot and let people drive it. That is the whole
+                event, and it works on anyone from about five years old upward. We can
+                also talk about how it was built if that suits the audience better.</dd>
+            <dt>What we need from you</dt>
+            <dd>A space roughly the size of a classroom, a power outlet, and about two
+                weeks of notice. More notice is better during build season.</dd>
+            <dt>First step</dt>
+            <dd><strong>Tell us the date and roughly how many people.</strong> We will
+                tell you straight away whether we can make it.</dd>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="band band--light" id="partner-form">
+    <div class="wrap">
+      <div class="split">
+
+        <div class="measure">
+          <span class="label">Get in touch</span>
+          <h2>Whichever route fits</h2>
+          <p class="lede">A student on the team reads these and replies. Tell us which
+             of the three you are, and roughly what you have in mind.</p>
+          <p>Prefer email? <a class="lnk" href="mailto:fractal.fusion27188@gmail.com">fractal.fusion27188@gmail.com</a></p>
+        </div>
+
+        <form class="form" data-web3form novalidate>
+          <input type="hidden" name="access_key" value="d6e491da-c962-41bf-93e9-3d3e856ada85">
+          <input type="hidden" name="subject" value="Partnership enquiry from fractalfusion.team">
+          <input type="hidden" name="from_name" value="Fractal Fusion website">
+          <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" autocomplete="off">
+
+          <div class="field">
+            <label for="p-role">I am a</label>
+            <select id="p-role" name="role" required>
+              <option value="Mentor">Mentor, or a potential one</option>
+              <option value="Another team">Another FTC or FRC team</option>
+              <option value="Outreach host">Somewhere that would like a robot to visit</option>
+              <option value="Something else">Something else</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="p-name">Your name</label>
+            <input id="p-name" name="name" type="text" required autocomplete="name">
+          </div>
+
+          <div class="field">
+            <label for="p-email">Email</label>
+            <input id="p-email" name="email" type="email" required autocomplete="email">
+          </div>
+
+          <div class="field">
+            <label for="p-org">School or organisation <span class="opt">optional</span></label>
+            <input id="p-org" name="organisation" type="text" autocomplete="organization">
+          </div>
+
+          <div class="field">
+            <label for="p-msg">What did you have in mind?</label>
+            <textarea id="p-msg" name="message" rows="5" required></textarea>
+          </div>
+
+          <button class="btn btn--accent" type="submit">Send</button>
+          <p class="form-status label" role="status" aria-live="polite"></p>
+        </form>
+
+      </div>
     </div>
   </section>
 

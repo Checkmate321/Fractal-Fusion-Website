@@ -752,6 +752,103 @@ a.card:hover{ transform:translateY(-2px) }
 
 
 /* ==========================================================================
+   PARTNER TRACKS
+   ========================================================================== */
+
+.track{
+  display:grid; gap:var(--s2) var(--s4);
+  grid-template-columns:repeat(auto-fit, minmax(min(100%, 8rem), auto));
+  padding-block:var(--s5);
+  border-top:1px solid var(--hair);
+}
+.track:first-of-type{ border-top:0; padding-top:0 }
+.track-num{ color:var(--c1) }
+.track-body{ max-width:var(--wrap-text) }
+.track-body h3{ font-size:var(--t-h2); font-stretch:118%; text-transform:uppercase }
+.track-body .lede{ margin:var(--s2) 0 var(--s3) }
+
+.track-dl{ margin:0; display:grid; gap:var(--s2) }
+.track-dl dt{
+  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--c1);
+  margin-top:var(--s2);
+}
+.track-dl dt:first-of-type{ margin-top:0 }
+.track-dl dd{ margin:0; color:var(--mute) }
+.track-dl dd strong{ color:inherit }
+
+
+/* ==========================================================================
+   RESOURCES
+   ========================================================================== */
+
+.res-card{ display:grid; align-content:start; gap:var(--s2); padding:var(--s3) }
+.res-type{
+  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase;
+  justify-self:start;
+  padding:.3rem .55rem; border-radius:2px;
+  background:var(--c1); color:var(--dark);
+}
+.res-summary{ color:var(--mute); font-size:var(--t-small); margin:0 }
+.res-meta{ margin-top:auto; padding-top:var(--s1) }
+
+/* Nothing to download yet, so it must not look or behave like a link. */
+.res-card.is-pending{ opacity:.72 }
+.res-card.is-pending .res-type{ background:transparent; color:inherit; border:1px solid var(--hair) }
+
+a.res-card{ transition:transform .16s ease, border-color .16s ease }
+a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
+
+.res-foot{ margin-top:var(--s4) }
+
+
+/* ==========================================================================
+   SEASON RECORD TABLE
+   ========================================================================== */
+
+.season{ margin-top:var(--s5) }
+.season-head{ display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--s2) var(--s3) }
+.season-head h3{ font-size:var(--t-h3); font-stretch:112% }
+
+/* A table cannot wrap, so it gets its own scroll rather than pushing the page. */
+.tablewrap{ overflow-x:auto; margin-top:var(--s3) }
+
+.rec{ border-collapse:collapse; width:100%; min-width:34rem; font-size:var(--t-small) }
+.rec th,
+.rec td{ text-align:left; padding:var(--s2) var(--s3) var(--s2) 0; border-bottom:1px solid var(--hair); vertical-align:top }
+.rec th{
+  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--mute);
+}
+.rec tr:last-child td{ border-bottom:0 }
+.rec td.n{ font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap }
+.rec td:last-child{ color:var(--c1) }
+
+
+/* ==========================================================================
+   SELECT, matched to the text inputs
+   ========================================================================== */
+
+.field select{
+  font-family:var(--font);
+  font-size:var(--t-body);
+  color:inherit;
+  background:transparent;
+  border:1px solid var(--hair);
+  border-radius:var(--radius);
+  padding:.7rem .85rem;
+  width:100%;
+  appearance:none;
+  cursor:pointer;
+}
+.field select:hover{ border-color:currentColor }
+.field select:focus-visible{ outline:2px solid var(--c1); outline-offset:1px; border-color:transparent }
+/* The dropdown list itself is painted by the OS, so it needs real colours. */
+.field select option{ background:var(--light); color:var(--dark) }
+
+
+/* ==========================================================================
    PLACEHOLDER, remove as each chunk lands
    ========================================================================== */
 
