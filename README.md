@@ -35,6 +35,7 @@ main.js                                   the only script
 
 data/                                     content that grows (JSON)
 files/logos/                              team and sponsor logos
+files/audio/click.wav                     UI click, played by main.js
 files/log/                                photos, one folder per log entry
 ```
 
@@ -96,6 +97,15 @@ fetch resolves.
 
 ---
 
+## Sponsors
+
+`data/sponsors.json` drives the detailed list on `sponsors.html`. The scrolling
+wall on the home page is hand written in `index.html`, so **adding a sponsor
+means editing both**. Say the word and the marquee can read from the same JSON.
+
+Every supplied logo is dark ink on transparency, so the wall belongs on a light
+band. Do not move it onto navy.
+
 ## Adding a log entry
 
 See [ADDING-A-LOG-ENTRY.md](ADDING-A-LOG-ENTRY.md). One object appended to
@@ -109,7 +119,8 @@ ever edited.
 - [ ] **Replace the fixture log entries.** They are invented placeholders written
       to test the schema. A site whose purpose is a credible record cannot ship
       with made up engineering history on it.
-- [ ] Swap the donate URL on `sponsors.html` for the real one.
+- [ ] **Swap the donate URL on `sponsors.html`.** It currently points at the
+      enquiry form and is marked as a placeholder on the page itself.
 - [ ] Point the Web3Forms key at the team address. It currently delivers to a
       personal inbox for testing. The public facing address is
       `fractal.fusion27188@gmail.com`.
@@ -123,8 +134,8 @@ ever edited.
 1. Done. Foundation: structure, tokens, header and footer, page shells
 2. Mission log: `data/log.json`, card grid, filters, entry pages
 3. Intake pipeline: Google Form to transcriber to repo
-4. Landing page
-5. Sponsors
+4. Done. Landing page
+5. Done. Sponsors
 6. Partners
 7. Resources
 8. About, meta, sitemap, ship

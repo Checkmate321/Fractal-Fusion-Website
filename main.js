@@ -37,6 +37,57 @@ function markActiveNav() {
   }
 }
 
+/* ==========================================================================
+   SPONSOR STRIP
+   Three logos do not cover a wide screen, so the one set in the markup is
+   cloned until half the run overflows the viewport, and the run always holds
+   an even number of sets so its two halves are identical. The CSS then slides
+   it by half its width and the loop has no seam.
+   ========================================================================== */
+
+var MARQUEE_SPEED = 55;   /* px per second, held constant at any width */
+
+function fillMarquee() {
+  var run = document.querySelector('.marquee-run');
+  if (!run) return;
+
+  var master = run.querySelector('.marquee-set');
+  if (!master) return;
+
+  /* Measure a still, single set: clones and the slide both distort the width. */
+  run.classList.remove('is-running');
+  while (run.children.length > 1) run.removeChild(run.lastElementChild);
+
+  /* Includes the set's trailing gap, which is padding, so the halves are exact.
+     .spon carries a fixed size in CSS, so this does not wait on the logos. */
+  var setWidth = master.getBoundingClientRect().width;
+  if (!setWidth) return;
+
+  var perHalf = Math.max(1, Math.ceil(window.innerWidth / setWidth));
+
+  for (var i = 1; i < perHalf * 2; i++) {
+    var copy = master.cloneNode(true);
+    /* One set is enough to read out. The rest are the same logos again. */
+    copy.setAttribute('aria-hidden', 'true');
+    var imgs = copy.querySelectorAll('img');
+    for (var j = 0; j < imgs.length; j++) imgs[j].alt = '';
+    run.appendChild(copy);
+  }
+
+  run.style.setProperty('--marquee-time', (setWidth * perHalf / MARQUEE_SPEED) + 's');
+  run.classList.add('is-running');
+}
+
+fillMarquee();
+
+/* A window dragged wider needs more clones, or the tail runs out mid screen. */
+var marqueeWait;
+window.addEventListener('resize', function () {
+  clearTimeout(marqueeWait);
+  marqueeWait = setTimeout(fillMarquee, 150);
+});
+
+
 include('header', 'header.html').then(markActiveNav);
 include('footer', 'footer.html');
 
@@ -193,7 +244,7 @@ function renderEntry(entries) {
         '<p class="lede">That entry does not exist, or the link is mistyped.</p>' +
       '</div></section>' +
       '<section class="band band--light"><div class="wrap">' +
-        '<a class="btn btn--solid" href="log.html">Back to the log</a>' +
+        '<a class="btn btn--accent" href="log.html">Back to the log</a>' +
       '</div></section>';
     return;
   }
@@ -244,14 +295,122 @@ function renderEntry(entries) {
 
 
 /* --------------------------------------------------------------------------
+   HOME, latest entries
+   -------------------------------------------------------------------------- */
+
+function renderHomeLog(entries) {
+  var host = document.getElementById('home-log');
+  if (!host) return;
+  host.innerHTML = entries.slice(0, 3).map(cardHTML).join('');
+}
+
+
+/* --------------------------------------------------------------------------
+   SPONSORS
+   -------------------------------------------------------------------------- */
+
+var SPONSOR_URL = 'data/sponsors.json';
+
+function tileHTML(s) {
+  var img = '<img class="sponsor-logo" src="' + esc(s.logo) + '" alt="' + esc(s.name) + '" loading="lazy">';
+  return s.url
+    ? '<a class="sponsor-tile" href="' + esc(s.url) + '" rel="noopener" title="' + esc(s.name) + '">' + img + '</a>'
+    : '<div class="sponsor-tile">' + img + '</div>';
+}
+
+function rowHTML(s) {
+  return '<div class="sponsor-row">' +
+      tileHTML(s) +
+      '<div>' +
+        '<h3>' + esc(s.name) + '</h3>' +
+        '<p>' + esc(s.note || '') + '</p>' +
+        (s.url ? '<a class="lnk" href="' + esc(s.url) + '" rel="noopener">Visit site</a>' : '') +
+      '</div>' +
+    '</div>';
+}
+
+function renderSponsors() {
+  var hosts = document.querySelectorAll('[data-sponsors]');
+  if (!hosts.length) return;
+
+  fetch(SPONSOR_URL)
+    .then(function (res) {
+      if (!res.ok) throw new Error(SPONSOR_URL + ' returned ' + res.status);
+      return res.json();
+    })
+    .then(function (list) {
+      hosts.forEach(function (host) {
+        host.innerHTML = (host.dataset.sponsors === 'detailed')
+          ? list.map(rowHTML).join('')
+          : list.map(tileHTML).join('');
+      });
+    })
+    .catch(function (err) {
+      console.error('[sponsors]', err);
+      hosts.forEach(function (host) {
+        host.innerHTML = '<div class="todo">The sponsor list could not be loaded. ' +
+          'Check data/sponsors.json for a missing or extra comma.</div>';
+      });
+    });
+}
+
+
+/* --------------------------------------------------------------------------
+   FORMS, posted to Web3Forms so the visitor never leaves the site
+   -------------------------------------------------------------------------- */
+
+function initForms() {
+  document.querySelectorAll('form[data-web3form]').forEach(function (form) {
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+
+      var status = form.querySelector('.form-status');
+      var btn    = form.querySelector('button[type="submit"]');
+      var data   = {};
+      new FormData(form).forEach(function (v, k) { data[k] = v; });
+
+      if (btn) btn.disabled = true;
+      if (status) status.textContent = 'Sending\u2026';
+
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (out) {
+          if (!out.success) throw new Error(out.message || 'Web3Forms rejected the submission');
+          form.reset();
+          if (status) status.textContent = 'Thank you. We will reply to that address within a couple of days.';
+          form.classList.add('is-sent');
+        })
+        .catch(function (err) {
+          console.error('[form]', err);
+          if (status) {
+            status.textContent = 'That did not send. Please email fractal.fusion27188@gmail.com instead.';
+          }
+        })
+        .then(function () { if (btn) btn.disabled = false; });
+    });
+  });
+}
+
+initForms();
+renderSponsors();
+
+
+/* --------------------------------------------------------------------------
    BOOT
    -------------------------------------------------------------------------- */
 
-if (document.getElementById('log-grid') || document.getElementById('entry')) {
+if (document.getElementById('log-grid') ||
+    document.getElementById('entry')   ||
+    document.getElementById('home-log')) {
   loadLog()
     .then(function (entries) {
       renderLogIndex(entries);
       renderEntry(entries);
+      renderHomeLog(entries);
     })
     .catch(function (err) {
       console.error('[log]', err);

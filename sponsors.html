@@ -36,7 +36,151 @@
 
   <section class="band band--light">
     <div class="wrap">
-      <div class="todo">CHUNK 5. The case, cash and in kind paths, donate button, inquiry form, sponsor wall.</div>
+      <div class="split">
+
+        <div class="measure">
+          <span class="label">Why it matters</span>
+          <h2>Two seasons, and a robot at the World Championship</h2>
+          <p>Team 27188 started in 2024 knowing very little. In our second season we won our
+             league tournament outright, were the first pick of the winning alliance at the
+             Florida Championship, and competed in the Ross Division at the
+             <em>FIRST</em> World Championship.</p>
+          <p>None of that is free. An FTC season costs real money in registration, parts,
+             tools and travel, and the students running the team are the ones who have to
+             find it. Sponsorship is the difference between a season spent building and a
+             season spent fundraising.</p>
+        </div>
+
+        <div class="card card--dark note-card">
+          <span class="label">Before you give</span>
+          <h3>We are a registered 501(c)(3)</h3>
+          <p>Your donation is tax deductible.</p>
+          <p><strong>Check whether your employer matches.</strong> Many large employers in
+             the Orlando area will match charitable giving, often at one to one. A gift of
+             five hundred dollars can quietly become a thousand, and most people never think
+             to ask.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--dark">
+    <div class="wrap">
+      <span class="label">Three ways to support us</span>
+      <h2>Not all of it is money</h2>
+
+      <div class="grid grid--3 support-grid">
+
+        <div class="card card--light">
+          <span class="label">One</span>
+          <h3>Fund the season</h3>
+          <p>The most flexible kind of help. It covers registration, competition parts,
+             spares that fail mid season, and getting the team to events.</p>
+        </div>
+
+        <div class="card card--light">
+          <span class="label">Two</span>
+          <h3>Supply materials</h3>
+          <p>Aluminium stock, polycarbonate, fasteners, bearings, filament, machine time.
+             If you already have it in the building, it is worth as much to us as cash.</p>
+        </div>
+
+        <div class="card card--light">
+          <span class="label">Three</span>
+          <h3>Share expertise</h3>
+          <p>An engineer for one design review is worth more than most cheques. That route
+             lives on the <a class="lnk" href="partners.html">partners page</a>.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--light">
+    <div class="wrap">
+      <div class="split">
+
+        <div class="measure">
+          <span class="label">Where it goes</span>
+          <h2>What a season actually costs</h2>
+          <p>Every dollar goes through the team budget and is spent on one of these:</p>
+          <ul class="cost-list">
+            <li><strong>Registration and event fees.</strong> Team registration, league play, and the state championship.</li>
+            <li><strong>The robot.</strong> Motors, servos, the control system, structure, and the parts that break in week three.</li>
+            <li><strong>Tools and workspace.</strong> What we build with, and what stays behind for the teams who come after us.</li>
+            <li><strong>Travel.</strong> Getting a team and a robot to competition, including the World Championship when we earn it.</li>
+            <li><strong>Outreach.</strong> Demonstration events, and the parts we hand to rookie teams getting started.</li>
+          </ul>
+          <p class="note-line mono">Named tiers with specific amounts arrive once this season's budget is finalised.</p>
+        </div>
+
+        <div>
+          <div class="card card--dark">
+            <span class="label">Give now</span>
+            <h3>Make a donation</h3>
+            <p>Any amount. It goes straight to the team.</p>
+            <!-- TODO Chunk 8: replace with the real donation destination -->
+            <a class="btn btn--accent donate-btn" href="#sponsor-form" data-donate>Donate</a>
+            <p class="mono note-line">Placeholder link. Swap in the real donation page.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--dark" id="sponsor-form">
+    <div class="wrap">
+      <div class="split">
+
+        <div class="measure">
+          <span class="label">Talk to us</span>
+          <h2>Start a conversation</h2>
+          <p class="lede">Tell us roughly what you have in mind and a student on the team
+             will reply. No obligation, and no sales pitch waiting on the other end.</p>
+          <p>Prefer email? <a class="lnk" href="mailto:fractal.fusion27188@gmail.com">fractal.fusion27188@gmail.com</a></p>
+        </div>
+
+        <form class="form" data-web3form novalidate>
+          <input type="hidden" name="access_key" value="d6e491da-c962-41bf-93e9-3d3e856ada85">
+          <input type="hidden" name="subject" value="Sponsorship enquiry from fractalfusion.team">
+          <input type="hidden" name="from_name" value="Fractal Fusion website">
+          <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" autocomplete="off">
+
+          <div class="field">
+            <label for="s-name">Your name</label>
+            <input id="s-name" name="name" type="text" required autocomplete="name">
+          </div>
+
+          <div class="field">
+            <label for="s-email">Email</label>
+            <input id="s-email" name="email" type="email" required autocomplete="email">
+          </div>
+
+          <div class="field">
+            <label for="s-org">Company or organisation <span class="opt">optional</span></label>
+            <input id="s-org" name="organisation" type="text" autocomplete="organization">
+          </div>
+
+          <div class="field">
+            <label for="s-msg">How would you like to help?</label>
+            <textarea id="s-msg" name="message" rows="5" required></textarea>
+          </div>
+
+          <button class="btn btn--accent" type="submit">Send</button>
+          <p class="form-status label" role="status" aria-live="polite"></p>
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--light">
+    <div class="wrap">
+      <span class="label">Current supporters</span>
+      <h2>Who backs this team</h2>
+      <div class="sponsor-list" data-sponsors="detailed"></div>
     </div>
   </section>
 

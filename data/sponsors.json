@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Orlando Science Schools",
+    "logo": "files/logos/ossLogo.png",
+    "url": "https://www.orlandoscience.org",
+    "note": "Our school. The programme, the space we build in, and the reason team 27188 exists at all."
+  },
+  {
+    "name": "Greensea IQ",
+    "logo": "files/logos/greenseaLogo.png",
+    "url": "https://greenseaiq.com",
+    "note": "Subsea robotics and autonomy. They solve underwater the same navigation and control problems we fight on a twelve foot field."
+  },
+  {
+    "name": "Gene Haas Foundation",
+    "logo": "files/logos/geneHaasLogo.svg",
+    "url": "https://www.ghaasfoundation.org",
+    "note": "Funds manufacturing and STEM education across FIRST, putting real tools in the hands of student teams."
+  }
+]
