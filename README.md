@@ -157,6 +157,27 @@ Three things about the viewer are deliberate, and each one is load bearing:
   are a palette texture baked into the file, so nothing in CSS or JS sets a
   material.
 
+### Controls
+
+Orbit is unbounded, polar runs 5deg to 175deg (top plate to underside, stopping
+short of the poles where the up vector is undefined and the view rolls), and
+zoom runs 40% to 400%. Panning is the one control left off: it slides the camera
+target sideways rather than turning it, so a stray drag leaves an empty stage
+with no obvious way back, whereas orbit and zoom always end up looking at the
+robot.
+
+**Enabling zoom means the wheel zooms the model instead of scrolling the page**
+whenever the pointer is over it, and the model is about a third of the hero.
+There is no modifier key for this in model-viewer. Two ways out if it bothers
+anyone: require ctrl or the meta key for zoom, the way an embedded map does, or
+turn zoom back off with the `disable-zoom` attribute.
+
+`auto-rotate-delay` starts at 0 so the robot is already turning when the page
+arrives, then goes to 3000 on the first interaction so the turntable does not
+fight someone who is trying to look at something. model-viewer uses that one
+value for both the initial pause and the post interaction pause, which is why it
+is changed at runtime rather than set once.
+
 The model is fetched unless the visitor has Save Data on, is on an estimated 2g
 connection, or has asked for reduced motion. There is deliberately **no width
 test**: the robot shows on a phone too, centred under the copy, which does mean a

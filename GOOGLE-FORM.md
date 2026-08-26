@@ -39,8 +39,16 @@ from the date and title, and the long answer is split into one array item per
 paragraph.
 
 **It cannot take image uploads**, because that needs a paid Web3Forms plan.
-Photos go to the team chat or the team Drive folder, and the form has a field
-for describing which entry they belong to.
+Photos go in the shared Drive folder instead, which the page links to directly:
+
+<https://drive.google.com/drive/folders/1cJLtyvKgX_VOBTnc9yhG80O-y_sLMR4x?usp=sharing>
+
+The form has a field for describing them, and the email includes the folder link
+alongside the `files/log/<id>/` path they need to end up in.
+
+To change the folder, edit the `href` on the `#photo-folder` button in
+`add-log.html`. The email reads the link back out of that markup, so there is
+only one copy of it.
 
 **Unlisted is not private.** Anyone with the link can submit. It only sends
 email, so the worst case is junk in the inbox, and there is a honeypot field to

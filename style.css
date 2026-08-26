@@ -441,6 +441,23 @@ a.card:hover{ transform:translateY(-2px) }
 .foot-social .soc:first-child{ margin-left:calc((var(--mark) - var(--hit)) / 2) }
 .foot-social .soc:last-child{ margin-right:calc((var(--mark) - var(--hit)) / 2) }
 
+/* The one breakpoint in the stylesheet, and it buys something no fluid value
+   can: order. Wide, the strip belongs between the brand and the marks. Once
+   the row can no longer hold all three, the marks belong up beside the brand
+   and the strip belongs at the very bottom, which is a different order, not a
+   different size. It fires at the width the single row stops fitting anyway,
+   so nothing jumps. */
+@media (max-width:38rem){
+  .site-foot .foot-social{
+    order:1;
+    margin-left:auto;      /* holds the marks right even alone on their line */
+  }
+  .site-foot .foot-legal{
+    order:2;
+    flex-basis:100%;       /* its own line, so its centring has room to read */
+  }
+}
+
 
 /* ==========================================================================
    PAGE HEADER, the block under the nav on every interior page
@@ -471,6 +488,7 @@ a.card:hover{ transform:translateY(-2px) }
   background:var(--light); color:var(--dark);
   padding-block:var(--s4) var(--s3);
   border-bottom:1px solid var(--hair);
+  overflow:hidden;      /* see .hero-copy: contains the overlap margin */
 }
 /* Copy and robot sit side by side, and wrap the way the nav does rather than at
    a breakpoint. The copy's 24rem basis plus the stage's 34rem and a column gap
@@ -478,13 +496,21 @@ a.card:hover{ transform:translateY(-2px) }
    drops to a row of its own, on its own, at whatever width the type needs.
 
    The bases are what split the row, so the robot is given the larger share of
-   it. The h1 is capped at 15ch and the lede at 46ch regardless, so the copy
-   column being narrower costs the type nothing: it was never using the width. */
+   it, and .hero-copy's negative end margin hands it a little of the copy's
+   share on top of that. */
 .hero .wrap{
   display:flex; flex-wrap:wrap; align-items:center;
   gap:var(--s4) var(--s3);
 }
-.hero-copy{ flex:1 1 24rem; min-width:0 }
+/* The negative end margin is the overlap. It lets the stage begin before the
+   copy column has finished, so the robot is drawn over the copy's right hand
+   side rather than beside it, and the row has --s6 more to give the robot than
+   it actually has. The type never reaches into that strip: the h1 is capped at
+   15ch and the lede at 46ch, so what the robot covers is empty by construction.
+   On the wrapped row the copy is alone and this margin only stretches its own
+   box past the gutter, which is why .hero clips: left aligned text inside a box
+   that is wider than the page is invisible, but it would still scroll. */
+.hero-copy{ flex:1 1 30rem; min-width:0; margin-inline-end:calc(-1 * var(--s6)) }
 .statrow{ flex:1 1 100% }
 
 .hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s2) }

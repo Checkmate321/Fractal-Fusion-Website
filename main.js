@@ -500,10 +500,17 @@ function composeLogEntry(form) {
   ];
 
   if (photos && photos.value.trim()) {
-    lines.push('Photos, put them in files/log/' + entry.id + '/ then add one');
-    lines.push('{ "src": ..., "caption": "" } per photo to images:');
+    /* The folder lives in the markup so the link still works without JS.
+       Read it back from there rather than keeping a second copy here. */
+    var folder = document.getElementById('photo-folder');
+
+    lines.push('Photos described:');
     lines.push('');
     lines.push(photos.value.trim());
+    lines.push('');
+    if (folder) lines.push('Shared folder: ' + folder.href);
+    lines.push('Download them into files/log/' + entry.id + '/, rename 01, 02,');
+    lines.push('then add one { "src": ..., "caption": "" } per photo to images.');
   } else {
     lines.push('No photos, so images stays [].');
   }
@@ -631,18 +638,31 @@ function buildRobot(stage) {
   mv.setAttribute('src', ROBOT_URL);
   mv.setAttribute('alt', 'Sierah, the 2026 competition robot, rotating slowly');
 
-  /* Turntable. auto-rotate-delay 0 because there is no interaction to wait for,
-     and the rotation is the whole point of putting it here. */
+  /* Turntable. The delay is the pause before rotation begins, and it is used
+     twice by model-viewer: once after the model loads, and again after every
+     interaction. Those two want different numbers. On arrival the robot should
+     already be turning, because that is the whole reason it is here; after a
+     drag it should hold still long enough for someone to look at what they just
+     turned towards. One attribute cannot be both, so it starts at zero and is
+     raised to three seconds the first time anybody touches it. */
   mv.setAttribute('auto-rotate', '');
   mv.setAttribute('auto-rotate-delay', '0');
   mv.setAttribute('rotation-per-second', '16deg');
 
-  /* Drag to look, but never zoom or pan: zoom would eat the page scroll, and
-     panning lets a visitor lose the robot off the edge of its own stage. */
+  mv.addEventListener('camera-change', function onFirstTouch(ev) {
+    if (!ev.detail || ev.detail.source !== 'user-interaction') return;
+    mv.autoRotateDelay = 3000;
+    mv.removeEventListener('camera-change', onFirstTouch);
+  });
+
   mv.setAttribute('camera-controls', '');
-  mv.setAttribute('disable-zoom', '');
-  mv.setAttribute('disable-pan', '');
   mv.setAttribute('interaction-prompt', 'none');
+
+  /* Panning stays off. It is the one control that can lose the robot: it slides
+     the camera target sideways rather than turning it, so a stray drag leaves an
+     empty stage and no obvious way back. Orbit and zoom always end up looking
+     at the robot. */
+  mv.setAttribute('disable-pan', '');
 
   /* The CAD is authored Z up, as CAD is. glTF is Y up, so without this the
      robot arrives lying on its back and the hero shows its underside. Measured,
@@ -651,13 +671,25 @@ function buildRobot(stage) {
   mv.setAttribute('orientation', '0deg -90deg 0deg');
 
   /* A long lens flattens perspective, which is what makes a CAD render read as
-     a drawing rather than a photograph. The orbit is the reference three
-     quarter view: round the front, slightly above. The radius sits under 100%
-     so the robot fills its stage instead of floating in the middle of it. */
+     a drawing rather than a photograph. The orbit is the opening three quarter
+     view: round the front, slightly above. The radius sits under 100% so the
+     robot fills its stage instead of floating in the middle of it. */
   mv.setAttribute('field-of-view', '24deg');
-  mv.setAttribute('camera-orbit', '35deg 72deg 86%');
-  mv.setAttribute('min-camera-orbit', 'auto 55deg auto');
-  mv.setAttribute('max-camera-orbit', 'auto 88deg auto');
+  mv.setAttribute('camera-orbit', '35deg 72deg 100%');
+
+  /* The limits are as wide as the format allows. Polar runs 5deg to 175deg,
+     which is very nearly pole to pole: straight down onto the top plate at one
+     end and up underneath the drivetrain at the other. It stops short of the
+     poles themselves because the camera's up vector is undefined exactly there
+     and the view rolls unpredictably as it passes through.
+
+     Radius runs 40% to 400% of the framing distance, close enough to read a
+     screw head and far enough to see the whole robot as an object. Azimuth is
+     left unset, which leaves it unbounded: the turn never hits a wall. */
+  mv.setAttribute('min-camera-orbit', 'auto 5deg 40%');
+  mv.setAttribute('max-camera-orbit', 'auto 175deg 400%');
+  mv.setAttribute('min-field-of-view', '10deg');
+  mv.setAttribute('max-field-of-view', '45deg');
 
   /* neutral, not the default filmic curve, which desaturates saturated colour
      as it brightens and turns the team blue to slate. No shadow and a flat

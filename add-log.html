@@ -38,17 +38,15 @@
       <div class="split">
 
         <div class="measure">
-          <span class="label">How this works</span>
-          <h2>You fill it in, someone moves it across</h2>
-          <p>This goes straight to a team inbox as an email, already formatted for the
-             site. Nothing you write here appears publicly until someone puts it in the
-             repo, so a rough entry is fine.</p>
-          <p>No account, no sign in, nothing to install.</p>
-
-          <h3 class="mt">On photos</h3>
-          <p>This form cannot take image uploads, so send photos to the team chat or drop
-             them in the team Drive folder, then describe them below so we know which
-             entry they belong to.</p>
+          <span class="label">Photos</span>
+          <h2>Photos go in the team Drive</h2>
+          <p>This form cannot take image uploads. Put them in the shared folder, then
+             describe them in the photos field so we know which entry they belong to.</p>
+          <p>
+            <a class="btn" id="photo-folder"
+               href="https://drive.google.com/drive/folders/1cJLtyvKgX_VOBTnc9yhG80O-y_sLMR4x?usp=sharing"
+               target="_blank" rel="noopener">Open the photo folder</a>
+          </p>
 
           <h3 class="mt">What makes a good entry</h3>
           <ul class="cost-list">
@@ -82,12 +80,12 @@
             <select id="l-topic" name="topic" required>
               <option value="CAD">CAD</option>
               <option value="Mechanical">Mechanical</option>
-              <option value="Misc">Misc</option>
+              <option value="Misc" selected>Misc</option>
               <option value="Outreach">Outreach</option>
               <option value="Software">Software</option>
               <option value="Strategy">Strategy</option>
             </select>
-            <span class="hint">Misc exists so you never stall on this.</span>
+            <span class="hint">Defaults to Misc, so a forgotten dropdown lands in the catch all rather than claiming to be something it is not.</span>
           </div>
 
           <div class="field">
@@ -105,7 +103,7 @@
           <div class="field">
             <label for="l-photos">Photos <span class="opt">optional</span></label>
             <textarea id="l-photos" name="photos" rows="2"></textarea>
-            <span class="hint">Where they are and what they show. One per line.</span>
+            <span class="hint">What they show, one per line, once they are in the folder above.</span>
           </div>
 
           <div class="field">
