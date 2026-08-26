@@ -1,6 +1,6 @@
 # Fractal Fusion, fractalfusion.team
 
-Website for <em>FIRST</em> Tech Challenge team 27188, Orlando Science Middle High Charter.
+Website for <em>FIRST</em> Tech Challenge team 27188, Orlando Science High School.
 
 Plain HTML, CSS and JavaScript. **No build step, no npm, no framework.**
 Clone it, run a server, edit files.

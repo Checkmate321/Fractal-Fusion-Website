@@ -191,6 +191,13 @@ h3{ font-size:var(--t-h3); font-stretch:105%; font-weight:700; line-height:1.25 
 h4{ font-size:var(--t-body); font-stretch:105%; font-weight:700 }
 
 p{ margin:0 0 var(--s2) }
+
+/* Italic leans into the space behind it, so <em>FIRST</em> reads as joined to
+   the word after it however many spaces the markup has. A hair of margin gives
+   that space back, in em so it scales with whatever type it lands in. The
+   wordmark's Fusion is an em set upright, so it opts out. */
+em{ margin-right:.12em }
+.brand em{ margin-right:0 }
 p:last-child{ margin-bottom:0 }
 
 a{ color:inherit }
@@ -1114,11 +1121,50 @@ a.card:active{ transform:translateY(0) }
    every field they find. */
 .botcheck{ position:absolute; left:-9999px; width:1px; height:1px; opacity:0 }
 
+/* A field that failed. There is no red in the palette, so the signal is
+   carried by the words and by a butter edge on the control, which is legible
+   as a shape on either ground. Colour is never the only thing saying it. */
+.field.is-invalid :is(input, select, textarea){
+  border-color:currentColor;
+  box-shadow:inset 3px 0 0 var(--c1);
+}
+
+.field-error{
+  justify-self:start;
+  font-family:var(--mono);
+  font-size:var(--t-label);
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  background:var(--c1);
+  color:var(--dark);
+  padding:.3rem .55rem;
+  border-radius:2px;
+}
+
 .form button[type="submit"]{ justify-self:start }
 .form button[disabled]{ opacity:.55; cursor:progress }
 .form-status:empty{ display:none }
 .form-status{ margin:0; text-transform:none; letter-spacing:.02em; font-size:var(--t-small) }
-.form.is-sent .form-status{ color:var(--c1) }
+/* Sent. Butter is the accent on either ground, but it can only be type on
+   navy, where it is 9.70:1. On periwinkle it is 1.07:1, so the sponsors form
+   read fine and the partners and add-log forms, which sit on light bands, put
+   the thank you in a colour nobody could see. On light it arrives as a fill
+   behind navy text instead, which is the same trade the buttons make on hover:
+   same accent, legal on both grounds. Inline-block so the fill hugs the
+   sentence rather than the whole column. */
+.form.is-sent .form-status{
+  display:inline-block;
+  background:var(--c1);
+  color:var(--dark);
+  padding:.35em .6em;
+  border-radius:var(--radius);
+}
+:is(.band--dark,.hero,.card--dark) .form.is-sent .form-status{
+  background:transparent;
+  color:var(--c1);
+  padding:0;
+}
 
 
 /* ==========================================================================

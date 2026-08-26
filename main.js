@@ -660,13 +660,114 @@ function showLogJson(form, json) {
 }
 
 
+/* Wording the browser's own messages do not manage: short, plain, and about
+   the field rather than about the specification. */
+function validationMessage(el) {
+  var v = el.validity;
+
+  if (v.valueMissing) {
+    if (el.tagName === 'SELECT') return 'Please pick one';
+    if (el.type === 'checkbox')  return 'Please tick this';
+    return 'This one is needed';
+  }
+  if (v.typeMismatch && el.type === 'email') return 'That does not look like an email address';
+  if (v.rangeUnderflow || v.rangeOverflow)   return 'That date is out of range';
+  if (v.tooShort)        return 'A little longer, please';
+  if (v.tooLong)         return 'That is a little too long';
+  if (v.patternMismatch) return 'That is not the format we expect';
+
+  return el.validationMessage || 'Please check this one';
+}
+
+function clearFieldError(field) {
+  if (!field) return;
+  field.classList.remove('is-invalid');
+
+  var msg = field.querySelector('.field-error');
+  if (msg) msg.remove();
+
+  var control = field.querySelector('input, select, textarea');
+  if (control) {
+    control.removeAttribute('aria-invalid');
+    control.removeAttribute('aria-describedby');
+  }
+}
+
+function clearFormErrors(form) {
+  form.querySelectorAll('.field').forEach(clearFieldError);
+}
+
+/* Marks every control that is not filled in properly, puts the reason under
+   it, moves focus to the first one, and reports how many there were. */
+function showFormErrors(form) {
+  clearFormErrors(form);
+
+  var bad = [];
+
+  for (var i = 0; i < form.elements.length; i++) {
+    var el = form.elements[i];
+
+    /* Hidden fields and the honeypot are exempt: willValidate is false for
+       anything the browser would not check itself. */
+    if (!el.willValidate || el.checkValidity()) continue;
+
+    bad.push(el);
+
+    var field = el.closest('.field');
+    if (!field) continue;
+
+    field.classList.add('is-invalid');
+
+    var id  = (el.id || el.name || 'field') + '-error';
+    var msg = document.createElement('span');
+    msg.className   = 'field-error';
+    msg.id          = id;
+    msg.textContent = validationMessage(el);
+    field.appendChild(msg);
+
+    el.setAttribute('aria-invalid', 'true');
+    el.setAttribute('aria-describedby', id);
+  }
+
+  if (bad.length) bad[0].focus();
+  return bad.length;
+}
+
+
 function initForms() {
   document.querySelectorAll('form[data-web3form]').forEach(function (form) {
+
+    /* The markup leaves native validation switched on, so a browser running
+       no JavaScript still refuses an incomplete form and posts to Web3Forms
+       directly. Now that we are here we can word the refusal better than the
+       browser's bubbles do, so we take it over. */
+    form.noValidate = true;
+
+    /* An error clears the moment its field is put right, rather than making
+       somebody submit again to find out. */
+    function recheck(ev) {
+      var field = ev.target.closest ? ev.target.closest('.field.is-invalid') : null;
+      if (field && ev.target.willValidate && ev.target.checkValidity()) clearFieldError(field);
+    }
+    form.addEventListener('input', recheck);
+    form.addEventListener('change', recheck);
+
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
 
       var status = form.querySelector('.form-status');
       var btn    = form.querySelector('button[type="submit"]');
+
+      var missing = showFormErrors(form);
+      if (missing) {
+        if (status) {
+          status.textContent = (missing === 1)
+            ? 'One field still needs something.'
+            : missing + ' fields still need something.';
+        }
+        return;
+      }
+      clearFormErrors(form);
 
       /* Compose first, so the assembled JSON is part of what gets sent. */
       var composed = (form.dataset.compose === 'log') ? composeLogEntry(form) : null;
@@ -675,6 +776,9 @@ function initForms() {
       new FormData(form).forEach(function (v, k) { data[k] = v; });
 
       if (btn) btn.disabled = true;
+      /* Clear the last outcome, or a failure after a success inherits the
+         success styling and reads as a second thank you. */
+      form.classList.remove('is-sent');
       if (status) status.textContent = 'Sending\u2026';
 
       fetch('https://api.web3forms.com/submit', {
@@ -979,15 +1083,23 @@ var CLICK_SRC = 'files/audio/click.wav';
    you had already settled on for this sample elsewhere. One number to turn. */
 var CLICK_VOLUME = 0.1;
 
-/* Clicked again before the last one has finished, an element playing from the
-   top cuts itself off. A handful of copies take turns instead, so a fast run
-   of clicks reads as a fast run of clicks. */
+/* Size of the fallback element pool, for browsers with no Web Audio and for
+   the moment before the sample has decoded. Copies take turns so a short run
+   of clicks does not cut itself off. The Web Audio path below needs no pool. */
 var CLICK_VOICES = 4;
 
-/* Ceiling on how long a navigation waits for the sound. Normally 'ended'
-   arrives first and this never fires; it is here so a missing or slow file
-   cannot leave a link feeling broken. */
-var CLICK_HOLD_MAX = 150;
+/* Ceiling on how long a navigation waits for the sound. Normally the sample
+   finishes first and this never fires; it is here so a missing or slow file
+   cannot leave a link feeling broken. It has to clear the sample plus the
+   output latency, or the ceiling cuts the very thing it is waiting for. */
+var CLICK_HOLD_MAX = 260;
+
+/* How far behind the graph the speakers are. Reported in seconds where it is
+   reported at all, and a small floor otherwise, since every device has some. */
+function outputLag() {
+  var lag = actx && (actx.outputLatency || actx.baseLatency) || 0;
+  return Math.min(120, Math.round(lag * 1000) + 30);
+}
 
 /* What counts as clickable. Text fields and their labels are deliberately
    absent: putting a cursor in a field is not the same gesture as pressing
@@ -1013,16 +1125,124 @@ function holdFor(ev, el) {
   return el.href;
 }
 
-function initClickSound() {
-  var voices = [];
-  var next = 0;
+/* An HTMLAudioElement plays one sound at a time, so restarting one that is
+   already going means seeking it back to zero, and a seek is a swallowed
+   click. Copies taking turns only moves the problem along by four. Web Audio
+   has no such limit: the file is decoded once and every click gets its own
+   source node off the same buffer, so any number of them overlap and none of
+   them ever seeks. The element pool below stays as the fallback. */
 
+var actx     = null;   /* created once, resumed on the first real gesture */
+var clickBus = null;   /* one gain node, created with the context and kept */
+var clickBuf = null;   /* the decoded sample, or null while it is loading */
+var voices   = [];     /* fallback pool, used until the buffer is ready */
+var nextVoice = 0;
+
+/* Sources that are still sounding. A node with nothing referencing it from
+   script has been collected mid playback before now, and because the loud
+   part of this sample is in its last ten milliseconds, losing the tail loses
+   the click. They are dropped again on 'ended'. */
+var sounding = [];
+
+function openCtx() {
+  var Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return null;
+  if (!actx) {
+    try { actx = new Ctx(); } catch (e) { return null; }
+    /* One permanent gain, rather than a fresh one per click. The volume lives
+       in one place and the only throwaway node is the source itself. */
+    clickBus = actx.createGain();
+    clickBus.gain.value = CLICK_VOLUME;
+    clickBus.connect(actx.destination);
+  }
+  return actx;
+}
+
+/* Fetched and decoded up front. Until it lands, and on any browser where it
+   fails, clicks come out of the element pool exactly as before. */
+function loadClickBuffer() {
+  var ctx = openCtx();
+  if (!ctx || !ctx.decodeAudioData || !window.fetch) return;
+
+  fetch(CLICK_SRC)
+    .then(function (res) { return res.arrayBuffer(); })
+    .then(function (bytes) {
+      /* The callback form, because Safari's promise version arrived late. */
+      ctx.decodeAudioData(bytes, function (buf) { clickBuf = buf; }, function () {});
+    })
+    .catch(function () {});
+}
+
+/* onDone, when given, fires when the sample has finished, so a link can wait
+   for it. It is best effort: a failure calls it too, because the navigation
+   matters more than the click. */
+function playClick(onDone) {
+  var ctx = actx;
+
+  /* A context opened before any interaction starts suspended. resume() is
+     only allowed to work inside a gesture, which is exactly where this runs.
+     It is async, so the first click or two still come from the pool. */
+  if (ctx && ctx.state === 'suspended' && ctx.resume) ctx.resume();
+
+  if (ctx && clickBus && clickBuf && ctx.state === 'running') {
+    var src = ctx.createBufferSource();
+    src.buffer = clickBuf;
+    src.connect(clickBus);
+
+    sounding.push(src);
+
+    var freed = false;
+    function free() {
+      if (freed) return;
+      freed = true;
+      var at = sounding.indexOf(src);
+      if (at !== -1) sounding.splice(at, 1);
+    }
+
+    src.onended = function () {
+      free();
+      /* The tail is still in the output buffer when this fires, so a link
+         waits out the hardware latency before it unloads the page. */
+      if (onDone) setTimeout(onDone, outputLag());
+    };
+
+    /* A backstop, because a reference that is only dropped by an event that
+       never arrives is a leak. Timed past the end of the sound either way. */
+    setTimeout(free, Math.round(clickBuf.duration * 1000) + outputLag() + 60);
+
+    src.start(0);
+    return;
+  }
+
+  playClickVoice(onDone);
+}
+
+function playClickVoice(onDone) {
+  if (!voices.length) { if (onDone) onDone(); return; }
+
+  var v = voices[nextVoice];
+  nextVoice = (nextVoice + 1) % voices.length;
+
+  try { v.currentTime = 0; } catch (e) {}
+  if (onDone) {
+    v.addEventListener('ended', function () { setTimeout(onDone, outputLag()); }, { once: true });
+  }
+
+  var p = v.play();
+  /* Rejects when the file is missing, or when the browser does not count the
+     gesture as trusted. Either way a held link still has to go. */
+  if (p && p.catch) p.catch(function () { if (onDone) onDone(); });
+}
+
+function initClickSound() {
   for (var i = 0; i < CLICK_VOICES; i++) {
     var voice = new Audio(CLICK_SRC);
     voice.preload = 'auto';
     voice.volume = CLICK_VOLUME;
     voices.push(voice);
   }
+
+  loadClickBuffer();
 
   document.addEventListener('click', function (ev) {
     var el = ev.target;
@@ -1031,18 +1251,10 @@ function initClickSound() {
     el = el.closest(CLICK_TARGETS);
     if (!el) return;
 
-    var v = voices[next];
-    next = (next + 1) % voices.length;
-
     var href = holdFor(ev, el);
-    if (href) ev.preventDefault();
+    if (!href) { playClick(null); return; }  /* nothing to wait for */
 
-    v.currentTime = 0;
-    /* Rejects when the file is missing, or when the browser does not count the
-       gesture as trusted. Either way a held link still has to go. */
-    v.play().catch(function () { if (href) location.href = href; });
-
-    if (!href) return;
+    ev.preventDefault();
 
     /* Leave the moment the sample is done, or at the ceiling, whichever is
        first, and only ever once. */
@@ -1052,7 +1264,8 @@ function initClickSound() {
       gone = true;
       location.href = href;
     }
-    v.addEventListener('ended', go, { once: true });
+
+    playClick(go);
     setTimeout(go, CLICK_HOLD_MAX);
   }, true);
 }

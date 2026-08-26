@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:#666} iframe{display:block;border:0;width:820px;height:420px;margin-bottom:8px}
+</style></head><body>
+<script>
+['partners.html','sponsors.html'].forEach(function(src){
+  var f=document.createElement('iframe'); f.src=src; document.body.appendChild(f);
+});
+setTimeout(function(){
+  [].slice.call(document.querySelectorAll('iframe')).forEach(function(f){
+    var d=f.contentDocument, form=d.querySelector('form[data-web3form]');
+    var st=form.querySelector('.form-status');
+    st.textContent='Thank you. We will reply to that address within a couple of days.';
+    form.classList.add('is-sent');
+    // scroll the status into view
+    f.contentWindow.scrollTo(0, st.getBoundingClientRect().top + f.contentWindow.scrollY - 300);
+  });
+},2500);
+</script></body></html>
