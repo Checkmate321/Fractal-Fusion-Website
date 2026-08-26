@@ -69,8 +69,10 @@ function fillMarquee() {
     var copy = master.cloneNode(true);
     /* One set is enough to read out. The rest are the same logos again. */
     copy.setAttribute('aria-hidden', 'true');
-    var imgs = copy.querySelectorAll('img');
-    for (var j = 0; j < imgs.length; j++) imgs[j].alt = '';
+    /* aria-hidden alone would leave the copies in the tab order: reachable by
+       keyboard but invisible to a screen reader, the worst of both. */
+    var links = copy.querySelectorAll('a');
+    for (var j = 0; j < links.length; j++) links[j].tabIndex = -1;
     run.appendChild(copy);
   }
 
@@ -88,8 +90,38 @@ window.addEventListener('resize', function () {
 });
 
 
-include('header', '/header.html').then(markActiveNav);
-include('footer', '/footer.html');
+/* ==========================================================================
+   EXTERNAL LINKS
+   Anything pointing off this host opens in a new tab. Swept here rather than
+   set by hand so the pages still being written, and the donate URL when it
+   lands, cannot forget. An explicit target in the markup always wins.
+   ========================================================================== */
+
+function markExternalLinks(root) {
+  var links = (root || document).querySelectorAll('a[href]');
+
+  for (var i = 0; i < links.length; i++) {
+    var a = links[i];
+    if (a.target) continue;                    /* the author already chose */
+
+    var url = new URL(a.getAttribute('href'), location.href);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') continue;   /* mailto:, tel: */
+    if (url.host === location.host) continue;  /* our own pages */
+
+    a.target = '_blank';
+    if (!a.rel) a.rel = 'noopener';
+  }
+}
+
+markExternalLinks();
+
+include('header', '/header.html').then(function () {
+  markActiveNav();
+  markExternalLinks(document.getElementById('header'));
+});
+include('footer', '/footer.html').then(function () {
+  markExternalLinks(document.getElementById('footer'));
+});
 
 
 /* --------------------------------------------------------------------------
@@ -446,6 +478,132 @@ renderSponsors();
 
 
 /* --------------------------------------------------------------------------
+   HERO ROBOT, Sierah in 3D
+
+   26Worlds-web.glb is the Worlds CAD run through glTF-Transform: the 9,010
+   primitives the exporter emitted were merged per mesh into 35, which took the
+   file from 11 MB to 3 MB and the draw calls down with it. The colours are a
+   palette texture baked into the model, so nothing here sets a material.
+
+   The viewer and its Draco decoder are vendored in files/vendor rather than
+   pulled from a CDN, so the site still clones and runs with no network beyond
+   the fonts.
+   -------------------------------------------------------------------------- */
+
+var ROBOT_URL   = 'files/CAD/26Worlds-web.glb';
+var VIEWER_URL  = 'files/vendor/model-viewer.min.js';
+var DRACO_URL   = 'files/vendor/draco/';
+
+/* Three megabytes is a lot to spend on an ornament, so it is not spent on a
+   visitor who has said they do not want it. Save Data and a 2g estimate are
+   that, in the only two ways a browser offers; reduced motion is a request not
+   to be shown a thing that spins. There is deliberately no width test: the
+   robot shows on a phone too, stacked under the copy, which does mean a phone
+   pays the full download. In every declined case the stage stays empty and
+   :empty removes it from the layout. */
+function wantsRobot() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+
+  var net = navigator.connection;
+  if (net) {
+    if (net.saveData) return false;
+    if (/2g/.test(net.effectiveType || '')) return false;
+  }
+  return true;
+}
+
+function buildRobot(stage) {
+  var mv = document.createElement('model-viewer');
+
+  mv.setAttribute('src', ROBOT_URL);
+  mv.setAttribute('alt', 'Sierah, the 2026 competition robot, rotating slowly');
+
+  /* Turntable. auto-rotate-delay 0 because there is no interaction to wait for,
+     and the rotation is the whole point of putting it here. */
+  mv.setAttribute('auto-rotate', '');
+  mv.setAttribute('auto-rotate-delay', '0');
+  mv.setAttribute('rotation-per-second', '16deg');
+
+  /* Drag to look, but never zoom or pan: zoom would eat the page scroll, and
+     panning lets a visitor lose the robot off the edge of its own stage. */
+  mv.setAttribute('camera-controls', '');
+  mv.setAttribute('disable-zoom', '');
+  mv.setAttribute('disable-pan', '');
+  mv.setAttribute('interaction-prompt', 'none');
+
+  /* The CAD is authored Z up, as CAD is. glTF is Y up, so without this the
+     robot arrives lying on its back and the hero shows its underside. Measured,
+     not guessed: the bounding box is 0.452 x 0.450 x 0.422 m, and the short
+     axis is the one that has to point at the sky. */
+  mv.setAttribute('orientation', '0deg -90deg 0deg');
+
+  /* A long lens flattens perspective, which is what makes a CAD render read as
+     a drawing rather than a photograph. The orbit is the reference three
+     quarter view: round the front, slightly above. The radius sits under 100%
+     so the robot fills its stage instead of floating in the middle of it. */
+  mv.setAttribute('field-of-view', '24deg');
+  mv.setAttribute('camera-orbit', '35deg 72deg 80%');
+  mv.setAttribute('min-camera-orbit', 'auto 55deg auto');
+  mv.setAttribute('max-camera-orbit', 'auto 88deg auto');
+
+  /* neutral, not the default filmic curve, which desaturates saturated colour
+     as it brightens and turns the team blue to slate. No shadow and a flat
+     environment: the page is two flat tones and the robot should sit in them. */
+  mv.setAttribute('tone-mapping', 'neutral');
+  mv.setAttribute('environment-image', 'neutral');
+  mv.setAttribute('shadow-intensity', '0');
+  mv.setAttribute('exposure', '1');
+
+  mv.setAttribute('loading', 'eager');
+
+  /* If the fetch or the decode fails there is no broken box to look at, the
+     hero simply goes back to being type. */
+  mv.addEventListener('error', function (ev) {
+    console.error('[robot]', ev.detail || ev);
+    stage.innerHTML = '';
+  });
+
+  stage.appendChild(mv);
+}
+
+function initHeroRobot() {
+  var stage = document.getElementById('hero-stage');
+  if (!stage || !wantsRobot()) return;
+
+  /* The script is a megabyte and the model three, and neither is needed for the
+     page to be readable, so both wait until the browser is otherwise idle.
+     Nothing above the fold blocks on either. */
+  var start = function () {
+    /* The viewer reads this global once, while its module is evaluating, and
+       falls back to Google's CDN copy of the Draco decoder if it is not already
+       there. It has to be set before the script tag, not after: the static
+       setter on the element runs too late, and assigning to it from a classic
+       script fails silently. Our model is Draco compressed, so without this the
+       page would reach out to gstatic.com on every visit. */
+    self.ModelViewerElement = self.ModelViewerElement || {};
+    self.ModelViewerElement.dracoDecoderLocation = DRACO_URL;
+
+    var tag = document.createElement('script');
+    tag.type = 'module';
+    tag.src = VIEWER_URL;
+    tag.onload = function () { buildRobot(stage); };
+    tag.onerror = function () {
+      console.error('[robot] could not load ' + VIEWER_URL);
+    };
+    document.head.appendChild(tag);
+  };
+
+  if (window.requestIdleCallback) {
+    requestIdleCallback(start, { timeout: 2500 });
+  } else {
+    window.addEventListener('load', start);
+  }
+}
+
+initHeroRobot();
+
+
+/* --------------------------------------------------------------------------
    BOOT
    -------------------------------------------------------------------------- */
 
@@ -457,6 +615,7 @@ if (document.getElementById('log-grid') ||
       renderLogIndex(entries);
       renderEntry(entries);
       renderHomeLog(entries);
+      markExternalLinks();          /* entries can carry outside links too */
     })
     .catch(function (err) {
       console.error('[log]', err);

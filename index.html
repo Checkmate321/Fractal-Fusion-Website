@@ -27,16 +27,25 @@
 <main>
   <section class="hero">
     <div class="wrap">
-      <span class="label">FTC 27188 &middot; Orlando, Florida</span>
-      <h1>We document every iteration, in public</h1>
-      <div class="rule"></div>
-      <p class="lede">A rookie team in 2024. Two seasons later, a robot at the
-         <em>FIRST</em> World Championship, plus a written record of how it got there.</p>
 
-      <div class="hero-actions">
-        <a class="btn" href="sponsors.html">Sponsor the team</a>
-        <a class="btn" href="log.html">Read the build log</a>
+      <div class="hero-copy">
+        <span class="label">FTC 27188 &middot; Orlando, Florida</span>
+        <h1>We document every iteration, in public</h1>
+        <div class="rule"></div>
+        <p class="lede">A rookie team in 2024. Two seasons later, a robot at the
+           <em>FIRST</em> World Championship, plus a written record of how it got there.</p>
+
+        <div class="hero-actions">
+          <a class="btn" href="sponsors.html">Sponsor the team</a>
+          <a class="btn" href="log.html">Read the build log</a>
+        </div>
       </div>
+
+      <!-- Sierah, the 2026 Worlds robot. Left empty on purpose: main.js builds
+           the viewer here only once it knows the model is worth fetching, so a
+           phone or a metered connection is never charged 3 MB for decoration.
+           Nothing on the page depends on it arriving. -->
+      <div class="hero-stage" id="hero-stage" aria-hidden="true"></div>
 
       <div class="statrow">
         <div>
@@ -68,18 +77,26 @@
 
     <div class="marquee">
       <div class="marquee-run">
+        <!-- The name in the span, not in alt: it is the link's accessible name
+             already, and an alt saying the same thing reads it out twice. -->
         <ul class="marquee-set">
-          <li class="spon">
-            <span class="spon-name">Gene Haas Foundation</span>
-            <img src="files/logos/geneHaasLogo.svg" alt="Gene Haas Foundation" width="90" height="99">
+          <li>
+            <a class="spon" href="https://www.ghaasfoundation.org/" target="_blank" rel="noopener">
+              <span class="spon-name">Gene Haas Foundation</span>
+              <img src="files/logos/geneHaasLogo.svg" alt="" width="90" height="99">
+            </a>
           </li>
-          <li class="spon">
-            <span class="spon-name">Greensea IQ</span>
-            <img src="files/logos/greenseaLogo.png" alt="Greensea IQ" width="60" height="76">
+          <li>
+            <a class="spon" href="https://greenseaiq.com/" target="_blank" rel="noopener">
+              <span class="spon-name">Greensea IQ</span>
+              <img src="files/logos/greenseaLogo.png" alt="" width="60" height="76">
+            </a>
           </li>
-          <li class="spon">
-            <span class="spon-name">Orlando Science Schools</span>
-            <img src="files/logos/ossLogo.png" alt="Orlando Science Schools" width="64" height="64">
+          <li>
+            <a class="spon" href="https://orlandoscience.org/highschool/" target="_blank" rel="noopener">
+              <span class="spon-name">Orlando Science Schools</span>
+              <img src="files/logos/ossLogo.png" alt="" width="64" height="64">
+            </a>
           </li>
         </ul>
       </div>

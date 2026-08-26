@@ -1,14 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
-# Never let line ending normalisation touch a binary. A .glb rewritten as
-# text is silently corrupted and the failure only shows up on download.
+# Binary assets. Line ending normalisation would corrupt these, and a diff of
+# them is never useful. The README already promised the .glb rule; it now exists.
 *.glb  binary
+*.wasm binary
 *.png  binary
-*.jpg  binary
-*.jpeg binary
-*.gif  binary
-*.webp binary
-*.pdf  binary
-*.step binary
-*.stl  binary
+*.wav  binary

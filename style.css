@@ -371,6 +371,8 @@ a.card:hover{ transform:translateY(-2px) }
 .site-foot .brand:hover em  { color:var(--light) }
 
 .foot-top{
+  border-top:1px solid var(--hair);
+  padding-top:var(--s4);
   display:flex; flex-wrap:wrap;
   gap:var(--s3) var(--s5);
   align-items:center; justify-content:space-between;
@@ -418,13 +420,19 @@ a.card:hover{ transform:translateY(-2px) }
    its target, lines up with the text edge once the row wraps to its own line. */
 .foot-social .soc:first-child{ margin-left:calc((var(--mark) - var(--hit)) / 2) }
 
+/* Centred, and held on one line as far down as the type can legibly go. The
+   font size is the one place on the page that does not sit on a --t token:
+   this row has to carry three fixed strings side by side, so it keys off the
+   viewport instead, bottoming out at the floor for legible mono. Below that
+   it wraps to two centred lines rather than shrinking further. */
 .foot-bot{
-  margin-top:var(--s4); padding-top:var(--s3);
-  border-top:1px solid var(--hair);
-  display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4);
-  font-family:var(--mono); font-size:var(--t-label);
+  margin-top:var(--s4);
+  display:flex; flex-wrap:wrap; justify-content:center;
+  gap:var(--s2) var(--s3);
+  font-family:var(--mono); font-size:clamp(.58rem, 1.55vw, .6875rem);
   letter-spacing:.09em; text-transform:uppercase; color:var(--mute);
 }
+.foot-bot > *{ white-space:nowrap }
 
 
 /* ==========================================================================
@@ -456,10 +464,101 @@ a.card:hover{ transform:translateY(-2px) }
   background:var(--light); color:var(--dark);
   padding-block:var(--s6) var(--s5);
   border-bottom:1px solid var(--hair);
+  /* The robot is pulled past the wrap and out to the window edge. Clipping here
+     is what makes that a crop rather than a horizontal scrollbar, and it also
+     absorbs the few pixels 100vw overshoots by on desktop, where 100vw counts
+     the scrollbar and the page does not. */
+  overflow:hidden;
 }
+/* Stacked is the base case: copy, then robot, then stats, each on its own row.
+   The side by side arrangement is switched on further down, and it is the one
+   place in this file that needs a real width query. The two arrangements are
+   not the same layout at different sizes, they are different layouts: stacked
+   centres the robot, side by side hangs it off the right edge. A fluid value
+   cannot be centred and off centre at once, so a clamp cannot express it. */
+.hero .wrap{
+  display:flex; flex-wrap:wrap; align-items:center;
+  gap:var(--s5) var(--s4);
+}
+.hero-copy{ flex:1 1 100%; min-width:0 }
+.statrow{ flex:1 1 100% }
+
 .hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s3) }
 .hero .lede{ margin-top:var(--s3); max-width:46ch }
 .hero-actions{ display:flex; flex-wrap:wrap; gap:var(--s2); margin-top:var(--s4) }
+
+/* The robot runs off the right edge, as in the reference. margin-right pulls the
+   stage out of the wrap's gutter and across the leftover viewport, so the model
+   is cropped by the window rather than boxed by the layout. The max() floor
+   keeps the pull at zero once the viewport is narrower than --wrap and there is
+   no leftover to cross.
+
+   The stage is square and sized in vh as well as vw: it is a hero ornament, and
+   on a short laptop it has to stay inside the fold with the h1, not push the
+   stats off screen. Empty until main.js decides to build it, so height is
+   reserved here and nothing shifts when the model lands. */
+/* Stacked: a full width row of its own, centred, and short enough that it does
+   not push the stats out of the fold on a phone. */
+.hero-stage{
+  flex:1 1 100%;
+  min-width:0;
+  aspect-ratio:1;
+  max-width:26rem;
+  max-height:clamp(16rem, 60vw, 26rem);
+  margin-inline:auto;
+}
+
+/* The one width query in this stylesheet. Everything else here is fluid, and
+   this is not a size, it is a switch between two arrangements. It is also
+   authoritative rather than advisory: the bases above and below are absolute,
+   so the row never wraps on its own somewhere near the threshold and leaves the
+   robot half bled and half centred. Change this number and nothing else has to
+   be kept in step with it. */
+@media (min-width:62rem){
+
+  .hero-copy{ flex:1 1 30rem }
+
+  .hero-stage{
+    flex:1 1 26rem;
+    max-width:none;
+    max-height:clamp(20rem, 30vw + 14vh, 38rem);
+    margin-inline:0;
+
+    /* Hang the robot off the right edge until about half of it is gone. Four
+       terms: cross the empty space beside the wrap, then the wrap's own gutter,
+       which together land the stage's right edge exactly on the window's, then
+       one more that is the crop itself. Only the third term hides anything, so
+       it tracks the viewport: the stage grows with the window and a flat value
+       would cut away less and less of it. The stage is
+       what gets cropped, because a model-viewer clips to its own box and the
+       model cannot spill out of it, so the stage has to leave the screen for
+       the robot to. .hero clips the overflow, which is what keeps this a crop
+       rather than a horizontal scrollbar. */
+    margin-right:calc(
+      -1 * max(0px, (100vw - var(--wrap)) / 2)
+      - clamp(1rem, 4vw, 2rem)
+      - clamp(10rem, 20vw, 26rem)
+    );
+  }
+}
+
+/* Fills the stage, transparent so the hero ground shows through, and never a
+   scroll trap: the viewer only takes the pointer when a drag starts on it. */
+.hero-stage model-viewer{
+  width:100%; height:100%;
+  background-color:transparent;
+  --poster-color:transparent;
+  touch-action:pan-y;
+}
+
+/* The viewer ships a loading bar in its shadow root, a translucent black rule
+   pinned across the top of the stage. It is not in the palette and there is
+   nothing here worth waiting for, so it goes. ::part is the only way in. */
+.hero-stage model-viewer::part(default-progress-bar){ display:none }
+
+/* No model, no empty box. main.js sets this when it declines to fetch, so the
+   hero collapses back to exactly the layout it had before the robot existed. */
+.hero-stage:empty{ display:none }
 
 .statrow{
   display:grid;
@@ -581,6 +680,11 @@ a.card:hover{ transform:translateY(-2px) }
   margin-top:var(--s3);
   overflow:hidden;
 
+  /* Room inside the clip box for a name to slide down into. overflow cannot be
+     hidden on one axis and visible on the other, so without this the reveal is
+     cut off at the logo line. */
+  padding-bottom:1.75rem;
+
   /* Logos enter and leave instead of being sliced off at the edge. Black here
      is an alpha stop, not a colour: the mask only reads the alpha channel. */
   -webkit-mask-image:linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
@@ -589,7 +693,7 @@ a.card:hover{ transform:translateY(-2px) }
 
 .marquee-run{ display:flex; width:max-content }
 .marquee-run.is-running{ animation:marquee var(--marquee-time, 40s) linear infinite }
-.marquee:hover .marquee-run{ animation-play-state:paused }
+.marquee:is(:hover,:focus-within) .marquee-run{ animation-play-state:paused }
 
 @keyframes marquee{ to{ transform:translateX(-50%) } }
 
@@ -600,15 +704,23 @@ a.card:hover{ transform:translateY(-2px) }
   margin:0; list-style:none;
 }
 
+.marquee-set > li{ display:flex }
+
+/* Each cell is the sponsor's link. Height is a variable because the slide
+   distance below is measured from it. */
 .spon{
+  --spon-h : clamp(56px, 6vw, 80px);
   position:relative; flex:0 0 auto;
   display:flex; align-items:center; justify-content:center;
   width:clamp(104px, 11vw, 140px);
-  height:clamp(56px, 6vw, 80px);
+  height:var(--spon-h);
+  text-decoration:none;
 }
 
-/* The name sits behind the mark and the mark draws down a little to let it
-   through, so hovering one logo reads as the logo lifting off its own name. */
+/* The name starts dead centre, where the mark covers it, and slides down out
+   from under it. It stays at z-index 0 for the whole trip, so the mark occludes
+   it on the way out and it reads as coming from behind rather than fading in
+   on top. */
 .spon-name{
   position:absolute; left:50%; top:50%; translate:-50% -50%;
   z-index:0;
@@ -617,16 +729,19 @@ a.card:hover{ transform:translateY(-2px) }
   letter-spacing:.14em; text-transform:uppercase;
   color:var(--mute);
   opacity:0;
-  transition:opacity .25s ease;
+  transition:translate .32s ease, opacity .2s ease;
 }
 .spon img{
   position:relative; z-index:1;
   max-width:100%; max-height:100%; width:auto;
   object-fit:contain;
-  transition:transform .25s ease;
 }
-.spon:hover .spon-name{ opacity:1 }
-.spon:hover img{ transform:scale(.82) }
+
+/* Keyboard gets the same reveal, and the strip holds still for it. */
+:is(.spon:hover, .spon:focus-visible) .spon-name{
+  opacity:1;
+  translate:-50% calc(-50% + var(--spon-h) / 2 + .5rem);
+}
 
 
 /* ==========================================================================

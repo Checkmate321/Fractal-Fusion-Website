@@ -38,6 +38,8 @@ data/                                     content that grows (JSON)
 files/logos/                              team and sponsor logos
 files/audio/click.wav                     UI click, played by main.js
 files/log/                                photos, one folder per log entry
+files/CAD/                                robot models
+files/vendor/                             model-viewer and its Draco decoder
 ```
 
 ## Editing
@@ -86,7 +88,16 @@ well. Layouts collapse on their own:
 * grids use `repeat(auto-fit, minmax(min(100%, X), 1fr))`, so columns wrap and
   never force the page wider than the viewport
 
-The only `@media` rule in the file is `prefers-reduced-motion`, which is a user
+There is **one** width query, at `62rem`, and it is the hero's only. It is not a
+size adjustment, it is a switch between two different arrangements: below it the
+robot is a centred row of its own under the copy, above it the robot hangs off
+the right edge of the window. A fluid value cannot be centred and off centre at
+the same time, so no clamp expresses this. It is written to be authoritative
+rather than advisory, meaning the flex bases either side are absolute and the
+row cannot wrap on its own near the threshold and leave the robot half bled and
+half centred. Change the number and nothing else needs to be kept in step.
+
+The other `@media` rule in the file is `prefers-reduced-motion`, which is a user
 setting rather than a breakpoint.
 
 ### Nav
@@ -113,8 +124,50 @@ band. Do not move it onto navy.
 or an empty `href` renders as a non clickable card marked "in progress", so the
 page can advertise work that is coming without offering a dead link.
 
-The three robot models in `files/CAD/` are real downloads. `.gitattributes` marks
+The robot models in `files/CAD/` are real downloads. `.gitattributes` marks
 `.glb` as binary so line ending normalisation can never corrupt them.
+
+## The robot in the hero
+
+`index.html` ends its hero with an empty `.hero-stage`. `main.js` fills it with a
+`<model-viewer>` showing `files/CAD/26Worlds-web.glb`, Sierah, turning slowly.
+
+**`26Worlds-web.glb` is generated, not authored.** It is `26Worlds.glb` with its
+primitives merged, and it is the file the site loads. Keep the original as the
+source of truth and regenerate the web copy if the CAD changes:
+
+```
+npx @gltf-transform/cli optimize <in>.glb <out>.glb --compress draco
+```
+
+That alone will not help much here. The Worlds export arrived as 9,010 separate
+primitives that all share one material, and `optimize` skips its `join` step
+whenever GPU instancing is on, so the merge has to be done directly against the
+scripting API. Merging them per mesh is what took the file from 11 MB to 3 MB:
+6 MB of the original was not geometry at all, it was the JSON describing 36,108
+accessors. Draw calls fell from 9,010 to 35 at the same time, which matters more
+than the megabytes on a phone.
+
+Three things about the viewer are deliberate, and each one is load bearing:
+
+* **It is vendored.** `files/vendor/` holds `model-viewer.min.js` and the Draco
+  decoder. model-viewer otherwise fetches that decoder from `gstatic.com` on
+  every visit, and the decoder location must be set on `self.ModelViewerElement`
+  *before* the script tag: the static property on the element is read too late,
+  and assigning to it from a classic script fails silently.
+* **`orientation="0deg -90deg 0deg"`.** The CAD is Z up, glTF is Y up. Without
+  it the robot lies on its back and the hero shows its underside.
+* **`tone-mapping="neutral"`.** The default filmic curve desaturates saturated
+  colour as it brightens, which turns the team blue to slate. The model's colours
+  are a palette texture baked into the file, so nothing in CSS or JS sets a
+  material.
+
+The model is fetched unless the visitor has Save Data on, is on an estimated 2g
+connection, or has asked for reduced motion. There is deliberately **no width
+test**: the robot shows on a phone too, centred under the copy, which does mean a
+phone pays the full download. Declined, the stage stays empty, `:empty` removes
+it, and the hero is exactly the layout it was before the robot existed. Nothing
+on the page waits on any of it.
 
 ## Adding a log entry
 
@@ -145,7 +198,7 @@ All eight chunks are done.
 
 1. Foundation: structure, tokens, header and footer, page shells
 2. Mission log: `data/log.json`, card grid, filters, entry pages
-3. Intake pipeline: see `GOOGLE-FORM.md`
+3. Intake pipeline: run `google-form-setup.gs`, see `GOOGLE-FORM.md`
 4. Landing page
 5. Sponsors
 6. Partners
