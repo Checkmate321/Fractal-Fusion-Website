@@ -28,41 +28,53 @@
   <section class="hero">
     <div class="wrap">
 
-      <div class="hero-copy">
+      <div class="hero-head">
         <span class="label">FTC 27188 &middot; Orlando, Florida</span>
-        <h1>We document every iteration, in public</h1>
+        <h1>Fusing the future, one build at a time</h1>
         <div class="rule"></div>
         <p class="lede">A rookie team in 2024. Two seasons later, a robot at the
            <em>FIRST</em> World Championship, plus a written record of how it got there.</p>
+      </div>
 
-        <div class="hero-actions">
-          <a class="btn" href="sponsors.html">Sponsor the team</a>
-          <a class="btn" href="log.html">Read the build log</a>
-        </div>
+      <!-- The buttons are a sibling of the head, not inside it, because on a
+           wide screen the robot is laid over the head and has to stop just
+           short of them. Being its own grid row is what gives it an edge to
+           stop at, and the row gap is the clearance you see above them. -->
+      <div class="hero-actions">
+        <a class="btn" href="sponsors.html">Sponsor the team</a>
+        <a class="btn" href="log.html">Read the build log</a>
       </div>
 
       <!-- Sierah, the 2026 Worlds robot. Left empty on purpose: main.js builds
            the viewer here only once it knows the model is worth fetching, so a
            phone or a metered connection is never charged 3 MB for decoration.
-           Nothing on the page depends on it arriving. -->
+           Nothing on the page depends on it arriving.
+
+           Source order is words, buttons, robot, which is exactly the stacked
+           order a phone gets. On a wide screen the grid lifts it back up and
+           lays it over the head. -->
       <div class="hero-stage" id="hero-stage" aria-hidden="true"></div>
 
       <div class="statrow">
+        <div>
+          <div class="stat">2,000+</div>
+          <span class="label">People reached</span>
+        </div>
+        <div>
+          <div class="stat">17,000+</div>
+          <span class="label">Social views</span>
+        </div>
         <div>
           <div class="stat">2024</div>
           <span class="label">Rookie year</span>
         </div>
         <div>
-          <div class="stat">5-0-0</div>
-          <span class="label">Orlando League Tournament<br>ranked 1st, Winning Alliance Captain</span>
-        </div>
-        <div>
-          <div class="stat">1st Pick</div>
-          <span class="label">Winning Alliance<br>Florida Championship</span>
-        </div>
-        <div>
-          <div class="stat">6-4</div>
-          <span class="label">Ross Division<br><em>FIRST</em> Championship</span>
+          <!-- BIOBUZZ reveal, Saturday 12 September 2026 at 12:00 pm ET, per
+               firstinspires.org. datetime is the only place the date lives:
+               main.js counts down from it, and with no script the element
+               still reads as the date it points at. -->
+          <time class="stat" id="kickoff" datetime="2026-09-12T12:00:00-04:00">Sep 12</time>
+          <span class="label">Until FTC kickoff</span>
         </div>
       </div>
     </div>
@@ -70,7 +82,7 @@
 
   <!-- CHUNK 4, the sponsor wall. One set of logos here; main.js clones it to
        fill the screen and slides it. Adding a sponsor means adding one li. -->
-  <section class="band band--light band--tight">
+  <section class="band band--light sponsors">
     <div class="wrap">
       <span class="label">Backed by</span>
     </div>
@@ -96,6 +108,12 @@
             <a class="spon" href="https://orlandoscience.org/highschool/" target="_blank" rel="noopener">
               <span class="spon-name">Orlando Science Schools</span>
               <img src="files/logos/ossLogo.png" alt="" width="64" height="64">
+            </a>
+          </li>
+          <li>
+            <a class="spon" href="https://www.firstinspires.org/" target="_blank" rel="noopener">
+              <span class="spon-name"><em>FIRST</em></span>
+              <img src="files/logos/firstLogo.png" alt="" width="516" height="309">
             </a>
           </li>
         </ul>

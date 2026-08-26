@@ -91,6 +91,49 @@ window.addEventListener('resize', function () {
 
 
 /* ==========================================================================
+   KICKOFF COUNTDOWN
+   The date lives in the markup, in the time element's datetime, so this only
+   formats it. Units step down as the date closes in, because a screen that
+   says 0d 14h is a worse read than one that says 14h 05m.
+   ========================================================================== */
+
+function startKickoff() {
+  var el = document.getElementById('kickoff');
+  if (!el) return;
+
+  var when = Date.parse(el.getAttribute('datetime'));
+  if (isNaN(when)) return;               /* leave the written date in place */
+
+  var label = el.nextElementSibling;
+
+  function tick() {
+    var left = when - Date.now();
+
+    if (left <= 0) {
+      el.textContent = 'Now';
+      if (label) label.textContent = 'FTC season under way';
+      return true;                       /* nothing left to count */
+    }
+
+    var mins  = Math.floor(left / 6e4);
+    var days  = Math.floor(mins / 1440);
+    var hours = Math.floor(mins % 1440 / 60);
+
+    if (days)       el.textContent = days + 'd ' + hours + 'h';
+    else if (hours) el.textContent = hours + 'h ' + (mins % 60) + 'm';
+    else            el.textContent = (mins % 60) + 'm';
+
+    return false;
+  }
+
+  if (tick()) return;
+  var timer = setInterval(function () { if (tick()) clearInterval(timer); }, 30000);
+}
+
+startKickoff();
+
+
+/* ==========================================================================
    EXTERNAL LINKS
    Anything pointing off this host opens in a new tab. Swept here rather than
    set by hand so the pages still being written, and the donate URL when it
@@ -681,7 +724,7 @@ function buildRobot(stage) {
      Radius runs 40% to 400% of the framing distance, close enough to read a
      screw head and far enough to see the whole robot as an object. Azimuth is
      left unset, which leaves it unbounded: the turn never hits a wall. */
-  mv.setAttribute('min-camera-orbit', 'auto 5deg 40%');
+  mv.setAttribute('min-camera-orbit', 'auto 5deg 15%');
   mv.setAttribute('max-camera-orbit', 'auto 175deg 400%');
   mv.setAttribute('min-field-of-view', '10deg');
   mv.setAttribute('max-field-of-view', '45deg');

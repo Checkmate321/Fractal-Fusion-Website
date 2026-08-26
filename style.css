@@ -142,6 +142,7 @@ a{ color:inherit }
 .lede{ font-size:var(--t-lede); color:var(--mute); line-height:1.5 }
 
 .stat{
+  display:block;        /* it is a <time> in the hero, which is inline by default */
   font-size:clamp(2rem, 4.4vw, 3.2rem);
   font-weight:800;
   font-stretch:118%;
@@ -389,12 +390,11 @@ a.card:hover{ transform:translateY(-2px) }
    itself it centres, which is also where it starts wrapping internally. */
 .foot-legal{
   /* Grows into whatever the brand and the marks leave, so on one line it sits
-     centred between them, and as the line tightens it gives up its own width
-     first, wrapping internally rather than shoving the marks onto a new row.
-     min-width stays auto on purpose: the items are nowrap, so the longest of
-     them is the floor past which it has to break instead of overflow. */
-  flex:1 1 12rem;
-  display:flex; flex-wrap:wrap; justify-content:center;
+     centred between them. nowrap here on purpose: inline, this strip is either
+     one line or it is not inline at all. It never stacks between the brand and
+     the marks, which is what the breakpoint below is for. */
+  flex:1 1 auto;
+  display:flex; flex-wrap:nowrap; justify-content:center;
   gap:var(--s1) var(--s3);
   font-family:var(--mono); font-size:clamp(.58rem, 1.1vw, .6875rem);
   letter-spacing:.09em; text-transform:uppercase; color:var(--mute);
@@ -445,12 +445,12 @@ a.card:hover{ transform:translateY(-2px) }
 .foot-social .soc:last-child{ margin-right:calc((var(--mark) - var(--hit)) / 2) }
 
 /* The one breakpoint in the stylesheet, and it buys something no fluid value
-   can: order. Wide, the strip belongs between the brand and the marks. Once
-   the row can no longer hold all three, the marks belong up beside the brand
-   and the strip belongs at the very bottom, which is a different order, not a
-   different size. It fires at the width the single row stops fitting anyway,
-   so nothing jumps. */
-@media (max-width:38rem){
+   can: order. Wide, the strip sits between the brand and the marks on one
+   line. Below this it drops to a line of its own at the bottom and the marks
+   come up beside the brand, which is a different order, not a different size.
+   It is set a little above the width where the strip's single line actually
+   runs out, so the strip is never caught stacking in the middle of the row. */
+@media (max-width:58rem){
   .site-foot .foot-social{
     order:1;
     margin-left:auto;      /* holds the marks right even alone on their line */
@@ -458,6 +458,7 @@ a.card:hover{ transform:translateY(-2px) }
   .site-foot .foot-legal{
     order:2;
     flex-basis:100%;       /* its own line, so its centring has room to read */
+    flex-wrap:wrap;        /* and now it may break, since the line is its own */
   }
 }
 
@@ -484,66 +485,38 @@ a.card:hover{ transform:translateY(-2px) }
    HOME hero
    ========================================================================== */
 
-/* Light, like the page-head on every other page, and edged the same way: a
-   hairline where the tone change used to be, and a shorter bottom pad, since
-   --s7 under the stats was breathing room for a slab that is no longer there. */
+/* Light, like the page-head on every other page. No rule along the bottom: the
+   sponsor strip under it is the same ground, and the two reading as one block
+   is the point. Every gap in here is one step down the space scale from where
+   it started, which is the whole of "tighter". */
 .hero{
   background:var(--light); color:var(--dark);
-  padding-block:var(--s4) var(--s3);
-  border-bottom:1px solid var(--hair);
-  overflow:hidden;      /* see .hero-copy: contains the overlap margin */
+  padding-block:var(--s3) var(--s2);
+  overflow:hidden;      /* contains the robot's full bleed row, see the query below */
 }
-/* Copy and robot sit side by side, and wrap the way the nav does rather than at
-   a breakpoint. The copy's 24rem basis plus the stage's 34rem and a column gap
-   means the two stop fitting somewhere under ~60rem of wrap, and the stage
-   drops to a row of its own, on its own, at whatever width the type needs.
-
-   The bases are what split the row, so the robot is given the larger share of
-   it, and .hero-copy's negative end margin hands it a little of the copy's
-   share on top of that. */
+/* Stacked is the base case, and it is what a phone gets: words, then buttons,
+   then the robot centred under them, each on its own full width row. Source
+   order already says this, so nothing here has to reorder anything. */
 .hero .wrap{
   display:flex; flex-wrap:wrap; align-items:center;
-  gap:var(--s4) var(--s3);
+  gap:var(--s3);
 }
-/* The negative end margin is the overlap. It lets the stage begin before the
-   copy column has finished, so the robot is drawn over the copy's right hand
-   side rather than beside it, and the row has --s6 more to give the robot than
-   it actually has. The type never reaches into that strip: the h1 is capped at
-   15ch and the lede at 46ch, so what the robot covers is empty by construction.
-   On the wrapped row the copy is alone and this margin only stretches its own
-   box past the gutter, which is why .hero clips: left aligned text inside a box
-   that is wider than the page is invisible, but it would still scroll. */
-.hero-copy{
-  flex:1 1 30rem; min-width:0;
-  margin-inline-end:calc(-1 * var(--s6));
-  /* Without this the negative margin lets the box grow past the wrap on the
-     stacked row, where the copy is alone and free to take the line plus the
-     margin back. The lede is capped at 46ch, which on a phone is wider than the
-     screen, so it would fill that overhang and have its right hand end clipped
-     by .hero. The cap resolves against the wrap, so it binds only there. */
-  max-width:100%;
-}
+.hero-head{ flex:1 1 100%; min-width:0 }
+.hero-actions{ flex:1 1 100% }
 .statrow{ flex:1 1 100% }
 
-.hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s2) }
+.hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s1) }
 .hero .lede{ margin-top:var(--s2); max-width:46ch }
-.hero-actions{ display:flex; flex-wrap:wrap; gap:var(--s2); margin-top:var(--s3) }
+.hero-actions{ display:flex; flex-wrap:wrap; gap:var(--s2) }
 
-/* Whole, never cropped, and the same rule at every width. Beside the copy it
-   takes its share of the row; once the row can no longer hold both it is the
-   only thing on its line, spans it, and the viewer centres the model inside its
-   own box, so the robot lands in the middle of the screen without anything here
-   having to know which of the two is happening.
-
-   Square, and sized against viewport height as well as width: it is a hero
-   ornament, and on a short laptop it has to stay in the fold with the h1 rather
-   than push the stats off screen. The height is reserved before the model
-   arrives, so nothing shifts when it does. */
+/* Centred, whole, and capped so it does not become the entire phone screen. */
 .hero-stage{
-  flex:1 1 34rem;
+  flex:1 1 100%;
   min-width:0;
   aspect-ratio:1;
-  max-height:clamp(18rem, 34vw + 16vh, 44rem);
+  max-width:26rem;
+  max-height:clamp(16rem, 60vw, 26rem);
+  margin-inline:auto;
 }
 
 /* Fills the stage, transparent so the hero ground shows through, and never a
@@ -564,13 +537,90 @@ a.card:hover{ transform:translateY(-2px) }
    hero collapses back to exactly the layout it had before the robot existed. */
 .hero-stage:empty{ display:none }
 
+
+/* The hero's one width query. Not a size, an arrangement: below it the robot is
+   a row under the words, above it the robot is laid over them. Layering and
+   stacking are not the same layout at two sizes, so no clamp expresses it.
+
+   Above the threshold the wrap becomes a three row grid, and the head and the
+   stage are both put in row one, so they occupy the same cell and overlap. The
+   buttons own row two. That is what bounds the robot: row one ends where row
+   two begins, so the robot can never reach the buttons, and the row gap is the
+   clearance above them. Nothing measures anything, the grid does it. */
+@media (min-width:64rem){
+
+  .hero .wrap{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr);
+    row-gap:var(--s2);
+  }
+
+  /* Centred against the robot rather than pinned to the top of the row. The
+     row is as tall as the robot needs, which is taller than the words, so
+     without this the copy sits up in a corner with a hole under it. */
+  .hero-head   { grid-area:1 / 1; align-self:center }
+  .hero-actions{ grid-area:2 / 1 }
+  .statrow     { grid-area:3 / 1; margin-top:0 }
+
+  /* Row one, over the words, and the full width of the window rather than of
+     the wrap: the robot is meant to be able to cross the whole screen once it
+     is zoomed in. The margin is the usual full bleed pair to width:100vw, and
+     .hero's clip absorbs the scrollbar's worth that 100vw overshoots by.
+
+     min-height, because otherwise the row is only as tall as the words and the
+     robot would be smaller than it is on a tablet. It is the robot that sets
+     how tall row one is, and the buttons sit under whatever that comes to. */
+  .hero-stage{
+    --stage-h:clamp(20rem, 26vw + 14vh, 38rem);
+
+    grid-area:1 / 1;
+    z-index:1;
+    position:relative;
+    overflow:hidden;
+    width:100vw;
+    margin-inline:calc((100% - 100vw) / 2);
+    max-width:none;
+    max-height:none;
+    aspect-ratio:auto;
+
+    /* Up through the hero's own top padding, so a zoomed in robot runs into the
+       header instead of stopping a gap short of it. The height gains back
+       exactly what the margin takes, so the row is still --stage-h tall and the
+       buttons underneath do not move. */
+    margin-top:calc(-1 * var(--s4));
+    min-height:calc(var(--stage-h) + var(--s4));
+
+    /* The same butter rule the header carries, for the same reason: it is the
+       edge of a band. Without it a zoomed in robot ends on a raw cut, which
+       reads as clipping rather than as a deliberate edge. Two ends of one band
+       now, the header's rule at the top and this at the bottom. */
+    border-bottom:2px solid var(--c1);
+  }
+
+  /* The canvas is wider than the window and hung off to one side, which is what
+     puts the robot right of the words at rest without touching the camera. The
+     alternative, sliding the camera's look at point sideways, makes the robot
+     swing across the screen as it turns rather than spin on the spot: measured
+     at 97px of drift against 0px for this. A model-viewer centres its model in
+     its own box, so moving the box is the whole trick, and .hero-stage clips
+     the overhang. Zoomed in, the robot grows about that off centre point and
+     crosses the words on its way to filling the window. */
+  .hero-stage model-viewer{
+    position:absolute;
+    inset-block:0;
+    left:-3%;
+    width:170%;
+    height:100%;
+  }
+}
+
 .statrow{
   display:grid;
-  gap:var(--s4);
+  gap:var(--s3);
   grid-template-columns:repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
-  margin-top:var(--s3);
+  margin-top:var(--s2);
 }
-.statrow .label{ margin-top:var(--s2) }
+.statrow .label{ margin-top:var(--s1) }
 
 
 /* ==========================================================================
@@ -687,13 +737,18 @@ a.card:hover{ transform:translateY(-2px) }
   /* Room inside the clip box for a name to slide down into. overflow cannot be
      hidden on one axis and visible on the other, so without this the reveal is
      cut off at the logo line. */
-  padding-bottom:1.75rem;
+  padding-bottom:1.25rem;
 
   /* Logos enter and leave instead of being sliced off at the edge. Black here
      is an alpha stop, not a colour: the mask only reads the alpha channel. */
   -webkit-mask-image:linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
           mask-image:linear-gradient(90deg, transparent, black 7%, black 93%, transparent);
 }
+
+/* Its own paddings rather than band--tight's: the label wants air above it,
+   the logos need very little under them, and --s5 on both sides was the gap
+   you could see. */
+.sponsors{ padding-block:var(--s3) var(--s1) }
 
 .marquee-run{ display:flex; width:max-content }
 .marquee-run.is-running{ animation:marquee var(--marquee-time, 40s) linear infinite }
@@ -996,6 +1051,36 @@ a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
   white-space:pre;
   tab-size:2;
 }
+
+
+/* ==========================================================================
+   SPONSOR PITCH
+   ========================================================================== */
+
+/* "156/8,365". The denominator is context, so it must not shout as loud. */
+.stat-sub{
+  font-size:.42em;
+  font-weight:700;
+  font-stretch:100%;
+  letter-spacing:0;
+  opacity:.6;
+  margin-left:.1em;
+}
+
+.benefit-grid{ margin-top:var(--s4) }
+.benefit-grid h3{ margin-bottom:var(--s2) }
+
+.contact-dl{
+  margin:var(--s4) 0 0;
+  display:grid; gap:var(--s2) var(--s3);
+  grid-template-columns:repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+.contact-dl dt{
+  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--c1);
+  margin-bottom:.3rem;
+}
+.contact-dl dd{ margin:0 0 var(--s2); word-break:break-word }
 
 
 /* ==========================================================================

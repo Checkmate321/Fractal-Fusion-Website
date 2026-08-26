@@ -88,12 +88,18 @@ well. Layouts collapse on their own:
   longer room beside the wordmark
 * grids use `repeat(auto-fit, minmax(min(100%, X), 1fr))`, so columns wrap and
   never force the page wider than the viewport
-* the hero carries `flex: 1 1 30rem` on its copy and `flex: 1 1 28rem` on the
-  robot, so the robot sits beside the copy while both fit and drops to a centred
-  row of its own when they do not
+* the hero stacks by default, in source order, so a phone gets words, buttons,
+  then a centred robot with nothing to reorder
 
-The only `@media` rule in the file is `prefers-reduced-motion`, which is a user
-setting rather than a breakpoint.
+There are two width queries in the file, and both buy order or arrangement
+rather than size, which is the one thing a fluid value cannot express:
+
+* the footer at `38rem`, where the social marks and the legal line swap places
+* the hero at `64rem`, where the robot stops being a row under the words and
+  becomes a layer over them
+
+The remaining `@media` rule is `prefers-reduced-motion`, which is a user setting
+rather than a breakpoint.
 
 ### Nav
 
@@ -157,11 +163,29 @@ Three things about the viewer are deliberate, and each one is load bearing:
   are a palette texture baked into the file, so nothing in CSS or JS sets a
   material.
 
+### The two arrangements
+
+Below `64rem` the hero is one column: `.hero-head`, `.hero-actions`,
+`.hero-stage`, `.statrow`, in that source order, robot centred under the
+buttons. Above it the wrap becomes a three row grid and `.hero-head` and
+`.hero-stage` are both placed in row one, so they share a cell and overlap.
+
+The robot sits right of the words at rest without the camera being touched: the
+`model-viewer` inside the stage is 170% wide and hung to one side, and the stage
+clips the overhang. The obvious alternative, sliding the camera's look at point
+sideways, was measured and rejected: it makes the robot swing 97px across the
+screen as it turns instead of spinning on the spot, against 0px drift for this.
+
 ### Controls
 
 Orbit is unbounded, polar runs 5deg to 175deg (top plate to underside, stopping
 short of the poles where the up vector is undefined and the view rolls), and
-zoom runs 40% to 400%. Panning is the one control left off: it slides the camera
+zoom runs 15% to 400%. 15% is deliberately far enough in that the robot fills
+the whole window and covers the words: above `64rem` the stage is a full bleed
+`100vw` row laid over the copy, so there is nothing to stop it horizontally.
+What does stop it is the row below: the buttons are their own grid row, so the
+robot's box ends where theirs begins and the row gap is the clearance you see
+above them. Nothing measures the buttons, the grid does it. Panning is the one control left off: it slides the camera
 target sideways rather than turning it, so a stray drag leaves an empty stage
 with no obvious way back, whereas orbit and zoom always end up looking at the
 robot.
@@ -210,8 +234,21 @@ ever edited.
       `fractal.fusion27188@gmail.com`.
 - [ ] Replace `ffLogo.png` with a vector if the source file turns up, and check
       the artifact at the centre of the spiral.
-- [ ] Confirm the award list and the "1st in Florida" npOPR claim against your
-      own records before either goes on a page.
+- [ ] Confirm the award list against your own records before it goes on a page.
+
+**The sponsorship letter says "among the top 30 robotics teams worldwide".**
+FTCScout puts the team 156th of 8,365 on total npOPR for the 2025 season, and
+80th of 8,365 in autonomous. Both are excellent and both are checkable in about
+thirty seconds by anyone who wants to. The site uses those figures rather than
+top 30. The letter should be corrected to match, because the sponsors being
+targeted are exactly the people who would look it up.
+
+Season rankings, for reference:
+
+| Season | Total npOPR | Autonomous |
+|---|---|---|
+| 2024/25 | 690 of 7,641, top 9% | 925 of 7,641, top 12% |
+| 2025/26 | 156 of 8,365, top 1.9% | 80 of 8,365, top 1.0% |
 
 ## Build order
 
