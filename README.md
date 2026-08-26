@@ -119,7 +119,7 @@ See `ADDING-A-LOG-ENTRY.md` (Chunk 2).
 ## Build order
 
 1. Done. Foundation: structure, tokens, header and footer, page shells
-2. Engineering log: `data/log.json`, card grid, filters, entry pages
+2. Mission log: `data/log.json`, card grid, filters, entry pages
 3. Intake pipeline: Google Form to transcriber to repo
 4. Landing page
 5. Sponsors

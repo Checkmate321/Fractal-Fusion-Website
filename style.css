@@ -143,7 +143,13 @@ a{ color:inherit }
 /* Dark context. Only three things need to know which ground they are on,
    because everything else rides on currentColor. */
 :is(.band--dark,.hero,.page-head,.card--dark) .stat{ color:var(--c1) }
-:is(.band--dark,.hero,.page-head,.card--dark) .btn--solid{ background:var(--light); color:var(--dark) }
+
+/* Butter arrives on hover as type on navy (9.70:1) and as a fill on
+   periwinkle (1.07:1, never type). Same gesture, legal on either ground. */
+:is(.band--dark,.hero,.page-head,.card--dark) .btn{
+  --btn-hover-bg : transparent;
+  --btn-hover-fg : var(--c1);
+}
 
 
 /* ==========================================================================
@@ -167,28 +173,48 @@ a.card:hover{ transform:translateY(-2px) }
 
 
 /* ==========================================================================
-   BUTTONS
+   BUTTONS. One shape. A hairline in the button's own text colour, notched
+   at the top-left and bottom-right so the stroke breaks open there and the
+   other two corners round. Outline is the default. --accent is the fill,
+   for the one primary action on a page.
    ========================================================================== */
 
 .btn{
+  --notch        : 1.25rem;        /* how far back the two open corners cut */
+  --btn-bg       : transparent;
+  --btn-hover-bg : var(--c1);
+  --btn-hover-fg : var(--dark);
+
   display:inline-block;
   font-family:var(--font);
   font-size:var(--t-small);
   font-weight:700;
   font-stretch:110%;
   line-height:1;
-  padding:.875rem 1.375rem;
-  border:1.5px solid transparent;
-  border-radius:var(--radius);
+  padding:.875rem 1.5rem;
+  color:inherit;
+  background:var(--btn-bg);
+  border:1px solid currentColor;
+  border-radius:0 1rem 0 1rem;     /* only the two live corners ever show it */
+  clip-path:polygon(
+    var(--notch) 0,
+    100% 0,
+    100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%,
+    0 100%,
+    0 var(--notch)
+  );
   text-decoration:none;
   cursor:pointer;
-  transition:opacity .16s ease;
+  transition:color .25s, background-color .25s;
 }
-.btn:hover{ opacity:.86 }
 
-.btn--accent{ background:var(--c1);  color:var(--dark) }
-.btn--solid { background:var(--dark); color:var(--light) }
-.btn--ghost { background:transparent; border-color:var(--hair); color:inherit }
+.btn:hover{ background:var(--btn-hover-bg); color:var(--btn-hover-fg) }
+
+/* clip-path cuts away the global focus ring, offset and all. Draw it inside. */
+.btn:focus-visible{ outline:none; box-shadow:inset 0 0 0 2px currentColor }
+
+.btn--accent{ --btn-bg:var(--c1); --btn-hover-bg:var(--light); color:var(--dark) }
 
 
 /* ==========================================================================
@@ -273,7 +299,7 @@ a.card:hover{ transform:translateY(-2px) }
 
 /* ==========================================================================
    SITE FOOTER
-   Equal auto-fit tracks, so columns collapse on their own.
+   Two rows: identity beside socials, then a thin legal line.
    ========================================================================== */
 
 .site-foot{ background:var(--dark); color:var(--light); padding-block:var(--s5) var(--s4) }
@@ -281,16 +307,16 @@ a.card:hover{ transform:translateY(-2px) }
 .site-foot a:hover{ color:var(--c1) }
 
 .foot-top{
-  display:grid;
-  gap:var(--s4);
-  grid-template-columns:repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  display:flex; flex-wrap:wrap;
+  gap:var(--s3) var(--s5);
+  align-items:flex-start; justify-content:space-between;
 }
-.foot-brand p{ color:var(--mute); font-size:var(--t-small); margin-top:var(--s2); max-width:32ch }
-.foot-col h4{
-  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
-  letter-spacing:.14em; text-transform:uppercase; color:var(--c1); margin-bottom:var(--s2);
+.foot-brand p{ color:var(--mute); font-size:var(--t-small); margin-top:var(--s2); max-width:34ch }
+
+.foot-social{
+  display:flex; flex-wrap:wrap; gap:var(--s2) var(--s3);
+  font-size:var(--t-small); font-weight:600;
 }
-.foot-col ul{ list-style:none; margin:0; padding:0; display:grid; gap:.5rem; font-size:var(--t-small) }
 
 .foot-bot{
   margin-top:var(--s4); padding-top:var(--s3);
