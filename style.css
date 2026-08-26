@@ -1,48 +1,57 @@
 /* ==========================================================================
-   FRACTAL FUSION — FTC 27188
-   style.css — the only stylesheet.
+   FRACTAL FUSION, FTC 27188
+   style.css, the only stylesheet.
 
    EDIT THE BLOCK BELOW. Everything else derives from it.
-   Nothing below :root should ever contain a raw hex value.
+   No raw hex value should ever appear below :root.
+   No breakpoints. Every size is fluid against the viewport.
    ========================================================================== */
 
 :root{
 
-  /* ---- COLORS · the whole palette ------------------------------------ */
-  --light : #DCE7F7;   /* periwinkle — light ground, text on dark        */
-  --dark  : #2E3A55;   /* slate navy — dark ground, text on light        */
-  --c1    : #FBEFA1;   /* butter     — accent. SHAPE on light, TEXT on dark */
+  /* ---- COLOURS, the whole palette ------------------------------------- */
+  --light : #DCE7F7;   /* periwinkle. Light ground, text on dark            */
+  --dark  : #2E3A55;   /* slate navy. Dark ground, text on light           */
+  --c1    : #FBEFA1;   /* butter. SHAPE on light, TEXT on dark             */
 
-  /* ---- FONTS ---------------------------------------------------------- */
+  /* ---- TONES, only two ------------------------------------------------
+     Both are mixed from currentColor, so they resolve against whatever
+     text colour surrounds them. One token works on either ground and
+     there is nothing to override when a section flips to navy.          */
+  --mute : color-mix(in srgb, currentColor 75%, transparent);  /* AA either way */
+  --hair : color-mix(in srgb, currentColor 18%, transparent);  /* borders only  */
+
+  /* ---- FONTS ----------------------------------------------------------- */
   --font  : Archivo, "Helvetica Neue", Arial, sans-serif;
   --mono  : "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* ---- TYPE SCALE ------------------------------------------------------ */
-  --t-hero  : clamp(2.5rem, 6.4vw, 4.75rem);
-  --t-h1    : clamp(2rem, 4.6vw, 3.1rem);
-  --t-h2    : clamp(1.45rem, 3vw, 2rem);
-  --t-h3    : 1.2rem;
-  --t-body  : 1.0625rem;
-  --t-small : 0.9375rem;
-  --t-label : 0.6875rem;
+  /* ---- TYPE, fluid ----------------------------------------------------- */
+  --t-hero  : clamp(2.25rem, 6.6vw, 4.75rem);
+  --t-h1    : clamp(1.85rem, 4.8vw, 3.1rem);
+  --t-h2    : clamp(1.35rem, 3.4vw, 2rem);
+  --t-h3    : clamp(1.05rem, 1.7vw, 1.25rem);
+  --t-body  : clamp(1rem, 1.05vw, 1.0625rem);
+  --t-lede  : clamp(1.05rem, 1.6vw, 1.1875rem);
+  --t-small : clamp(.9rem, 1vw, .9375rem);
+  --t-label : clamp(.66rem, .82vw, .6875rem);
 
-  /* ---- SPACING --------------------------------------------------------- */
-  --s1: .5rem;  --s2: 1rem;   --s3: 1.5rem;  --s4: 2rem;
-  --s5: 3rem;   --s6: 4.5rem; --s7: 7rem;
+  /* ---- SPACE, fluid ---------------------------------------------------- */
+  --s1 : clamp(.35rem, .6vw,  .5rem);
+  --s2 : clamp(.7rem,  1.2vw, 1rem);
+  --s3 : clamp(1rem,   2vw,   1.5rem);
+  --s4 : clamp(1.4rem, 3vw,   2rem);
+  --s5 : clamp(2rem,   4.4vw, 3rem);
+
+  /* These two also lean on viewport height so tall screens breathe and
+     short laptops do not waste half the fold on padding. */
+  --s6 : clamp(2.5rem, 4vw + 2vh, 4.5rem);
+  --s7 : clamp(3rem,   5vw + 3vh, 7rem);
 
   /* ---- LAYOUT ---------------------------------------------------------- */
   --wrap      : 1140px;
   --wrap-text : 68ch;
   --radius    : 4px;
-  --header-h  : 74px;
-
-  /* ---- TONES · opacity only, never a new colour ------------------------ */
-  --hair       : color-mix(in srgb, var(--dark) 16%, transparent);
-  --mute       : color-mix(in srgb, var(--dark) 75%, transparent);
-  --faint      : color-mix(in srgb, var(--dark) 55%, transparent);
-  --hair-on-d  : color-mix(in srgb, var(--light) 20%, transparent);
-  --mute-on-d  : color-mix(in srgb, var(--light) 78%, transparent);
-  --faint-on-d : color-mix(in srgb, var(--light) 55%, transparent);
+  --header-h  : clamp(62px, 6vh + 2.5rem, 84px);
 }
 
 
@@ -67,10 +76,10 @@ body{
 img{ max-width:100%; height:auto; display:block }
 
 h1,h2,h3,h4{ margin:0; font-weight:800; line-height:1.08; text-wrap:balance }
-h1{ font-size:var(--t-h1);  font-stretch:120%; text-transform:uppercase; letter-spacing:-.005em }
-h2{ font-size:var(--t-h2);  font-stretch:118%; text-transform:uppercase; letter-spacing:-.005em }
-h3{ font-size:var(--t-h3);  font-stretch:105%; font-weight:700; line-height:1.25 }
-h4{ font-size:1.0625rem;    font-stretch:105%; font-weight:700 }
+h1{ font-size:var(--t-h1); font-stretch:120%; text-transform:uppercase; letter-spacing:-.005em }
+h2{ font-size:var(--t-h2); font-stretch:118%; text-transform:uppercase; letter-spacing:-.005em }
+h3{ font-size:var(--t-h3); font-stretch:105%; font-weight:700; line-height:1.25 }
+h4{ font-size:var(--t-body); font-stretch:105%; font-weight:700 }
 
 p{ margin:0 0 var(--s2) }
 p:last-child{ margin-bottom:0 }
@@ -79,7 +88,7 @@ a{ color:inherit }
 
 ::selection{ background:var(--c1); color:var(--dark) }
 
-:focus-visible{ outline:2px solid var(--dark); outline-offset:3px; border-radius:2px }
+:focus-visible{ outline:2px solid currentColor; outline-offset:3px; border-radius:2px }
 
 
 /* ==========================================================================
@@ -89,23 +98,29 @@ a{ color:inherit }
 /* The one exception to Archivo. */
 .mono{ font-family:var(--mono) }
 
-.wrap{ width:100%; max-width:var(--wrap); margin-inline:auto; padding-inline:var(--s3) }
+.wrap{
+  width:100%;
+  max-width:var(--wrap);
+  margin-inline:auto;
+  padding-inline:clamp(1rem, 4vw, 2rem);
+}
 .measure{ max-width:var(--wrap-text) }
 
 .label{
+  display:block;
   font-family:var(--mono);
   font-size:var(--t-label);
   font-weight:600;
   letter-spacing:.15em;
   text-transform:uppercase;
-  color:var(--faint);
-  display:block;
+  color:var(--mute);
+  line-height:1.5;
 }
 
-.lede{ font-size:1.1875rem; color:var(--mute); line-height:1.5 }
+.lede{ font-size:var(--t-lede); color:var(--mute); line-height:1.5 }
 
 .stat{
-  font-size:clamp(2.2rem,4.4vw,3.2rem);
+  font-size:clamp(2rem, 4.4vw, 3.2rem);
   font-weight:800;
   font-stretch:118%;
   line-height:1;
@@ -113,9 +128,11 @@ a{ color:inherit }
   font-variant-numeric:tabular-nums;
 }
 
+.rule{ height:8px; width:clamp(72px, 9vw, 112px); background:var(--c1); border-radius:1px; margin-top:var(--s2) }
+
 
 /* ==========================================================================
-   BANDS · every section is either light or dark. Nothing in between.
+   BANDS. Every section is either light or dark. Nothing in between.
    ========================================================================== */
 
 .band{ padding-block:var(--s6) }
@@ -123,16 +140,14 @@ a{ color:inherit }
 .band--dark { background:var(--dark);  color:var(--light) }
 .band--tight{ padding-block:var(--s5) }
 
-/* Dark context. Any of these grounds flips the components inside it. */
-:is(.band--dark,.hero,.page-head,.card--dark) .label{ color:var(--faint-on-d) }
-:is(.band--dark,.hero,.page-head,.card--dark) .lede { color:var(--mute-on-d) }
-:is(.band--dark,.hero,.page-head,.card--dark) .stat { color:var(--c1) }
-
-.rule{ height:8px; width:112px; background:var(--c1); border-radius:1px; margin-top:var(--s2) }
+/* Dark context. Only three things need to know which ground they are on,
+   because everything else rides on currentColor. */
+:is(.band--dark,.hero,.page-head,.card--dark) .stat{ color:var(--c1) }
+:is(.band--dark,.hero,.page-head,.card--dark) .btn--solid{ background:var(--light); color:var(--dark) }
 
 
 /* ==========================================================================
-   CARDS · a card inverts its ground. Never a tint, never an opacity fill.
+   CARDS. A card inverts its ground. Never a tint, never a partial fill.
    ========================================================================== */
 
 .card{
@@ -144,12 +159,8 @@ a{ color:inherit }
 .card--dark { background:var(--dark);  color:var(--light) }
 .card--light{ background:var(--light); color:var(--dark) }
 
-/* The release valve: an outlined card, so a dense grid isn't all slabs. */
+/* The release valve, so a dense grid is not all slabs. */
 .card--line{ background:transparent; border:1px solid var(--hair) }
-:is(.band--dark,.hero,.page-head,.card--dark) .card--line{ border-color:var(--hair-on-d) }
-
-.card--dark  .label{ color:var(--faint-on-d) }
-.card--light .label{ color:var(--faint) }
 
 a.card{ transition:transform .16s ease }
 a.card:hover{ transform:translateY(-2px) }
@@ -175,20 +186,17 @@ a.card:hover{ transform:translateY(-2px) }
 }
 .btn:hover{ opacity:.86 }
 
-.btn--accent{ background:var(--c1);   color:var(--dark) }
-.btn--solid { background:var(--dark);  color:var(--light) }
-:is(.band--dark,.hero,.page-head,.card--dark) .btn--solid{ background:var(--light); color:var(--dark) }
-
-.btn--ghost{ background:transparent; border-color:var(--hair); color:var(--dark) }
-:is(.band--dark,.hero,.page-head,.card--dark) .btn--ghost{ border-color:var(--hair-on-d); color:var(--light) }
+.btn--accent{ background:var(--c1);  color:var(--dark) }
+.btn--solid { background:var(--dark); color:var(--light) }
+.btn--ghost { background:transparent; border-color:var(--hair); color:inherit }
 
 
 /* ==========================================================================
-   LINKS · navy text with a yellow bar that fills upward on hover.
+   LINKS. Navy text with a yellow bar that fills upward on hover.
    ========================================================================== */
 
 .lnk{
-  color:var(--dark);
+  color:inherit;
   font-weight:600;
   text-decoration:none;
   padding:0 2px;
@@ -214,6 +222,8 @@ a.card:hover{ transform:translateY(-2px) }
 
 /* ==========================================================================
    SITE HEADER
+   The nav carries a flex-basis, so it drops to its own row on its own
+   when there is no longer room beside the wordmark. No breakpoint needed.
    ========================================================================== */
 
 #header{ min-height:var(--header-h) }   /* reserve space before the fetch lands */
@@ -223,25 +233,37 @@ a.card:hover{ transform:translateY(-2px) }
   background:var(--dark); color:var(--light);
   min-height:var(--header-h);
   display:flex; align-items:center;
+  padding-block:var(--s2);
 }
-.site-head .wrap{ display:flex; align-items:center; gap:var(--s3) }
+.site-head .wrap{
+  display:flex; align-items:center; flex-wrap:wrap;
+  gap:var(--s2) var(--s3);
+}
 
-.brand{ display:flex; align-items:center; gap:.625rem; text-decoration:none; color:var(--light); flex-shrink:0 }
-.brand img{ width:38px; height:38px }
+.brand{ display:flex; align-items:center; gap:.625rem; text-decoration:none; color:var(--light); flex:0 0 auto }
+.brand img{ width:clamp(32px, 3.4vw, 40px); height:auto }
 .brand span{
-  font-weight:800; font-stretch:120%; font-size:1rem;
+  font-weight:800; font-stretch:120%; font-size:clamp(.9rem, 1.1vw, 1rem);
   text-transform:uppercase; letter-spacing:.01em; line-height:1.05;
 }
 .brand em{ font-style:normal; color:var(--c1) }
 
-.site-nav{ margin-left:auto; display:flex; gap:var(--s3);
-  overflow-x:auto; scrollbar-width:none;
-  min-width:0;            /* without this the nav forces the page wider than the viewport */
+.site-nav{
+  display:flex; gap:var(--s3);
+  flex:1 1 22rem;          /* below ~22rem of free space the nav wraps to its own line */
+  min-width:0;             /* without this the nav forces the page wider than the viewport */
+  overflow-x:auto;
+  scrollbar-width:none;
 }
+
+/* Right aligns the nav when there is spare room, and collapses to zero when
+   there is not. justify-content:flex-end would instead push the overflow off
+   the left edge, where it cannot be scrolled back into view. */
+.site-nav > a:first-child{ margin-left:auto }
 .site-nav::-webkit-scrollbar{ display:none }
 .site-nav a{
   font-size:var(--t-small); font-weight:600;
-  color:var(--mute-on-d); text-decoration:none;
+  color:var(--mute); text-decoration:none;
   white-space:nowrap; padding-block:.375rem;
   border-bottom:3px solid transparent;
 }
@@ -251,54 +273,63 @@ a.card:hover{ transform:translateY(-2px) }
 
 /* ==========================================================================
    SITE FOOTER
+   Equal auto-fit tracks, so columns collapse on their own.
    ========================================================================== */
 
 .site-foot{ background:var(--dark); color:var(--light); padding-block:var(--s5) var(--s4) }
-.site-foot a{ color:var(--mute-on-d); text-decoration:none }
+.site-foot a{ color:var(--mute); text-decoration:none }
 .site-foot a:hover{ color:var(--c1) }
 
 .foot-top{
-  display:grid; gap:var(--s4);
-  /* min(100%,…) keeps a track's minimum from ever exceeding the container,
-     which is what otherwise forces a horizontal scrollbar on small phones. */
-  grid-template-columns:minmax(min(100%,220px),1.3fr) repeat(auto-fit,minmax(min(100%,130px),1fr));
+  display:grid;
+  gap:var(--s4);
+  grid-template-columns:repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
 }
-.foot-brand p{ color:var(--mute-on-d); font-size:var(--t-small); margin-top:var(--s2); max-width:32ch }
-.foot-col h4{ font-family:var(--mono); font-size:var(--t-label); font-weight:600;
-  letter-spacing:.14em; text-transform:uppercase; color:var(--c1); margin-bottom:var(--s2) }
+.foot-brand p{ color:var(--mute); font-size:var(--t-small); margin-top:var(--s2); max-width:32ch }
+.foot-col h4{
+  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--c1); margin-bottom:var(--s2);
+}
 .foot-col ul{ list-style:none; margin:0; padding:0; display:grid; gap:.5rem; font-size:var(--t-small) }
 
 .foot-bot{
   margin-top:var(--s4); padding-top:var(--s3);
-  border-top:1px solid var(--hair-on-d);
+  border-top:1px solid var(--hair);
   display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4);
   font-family:var(--mono); font-size:var(--t-label);
-  letter-spacing:.09em; text-transform:uppercase; color:var(--faint-on-d);
+  letter-spacing:.09em; text-transform:uppercase; color:var(--mute);
 }
 
 
 /* ==========================================================================
-   PAGE HEADER · the block under the nav on every interior page
+   PAGE HEADER, the block under the nav on every interior page
    ========================================================================== */
 
 .page-head{ background:var(--dark); color:var(--light); padding-block:var(--s5) var(--s6) }
 .page-head h1{ margin-top:var(--s2); max-width:16ch }
-.page-head .lede{ color:var(--mute-on-d); margin-top:var(--s3); max-width:52ch }
+.page-head .lede{ margin-top:var(--s3); max-width:52ch }
 .page-head .label{ color:var(--c1) }
 
 
 /* ==========================================================================
-   HOME · hero
+   HOME hero
    ========================================================================== */
 
-.hero{ background:var(--dark); color:var(--light); padding-block:var(--s6) var(--s7) }
+.hero{
+  background:var(--dark); color:var(--light);
+  padding-block:var(--s6) var(--s7);
+}
 .hero h1{ font-size:var(--t-hero); max-width:15ch; margin-top:var(--s3) }
-.hero .lede{ color:var(--mute-on-d); margin-top:var(--s3); max-width:46ch }
+.hero .lede{ margin-top:var(--s3); max-width:46ch }
 .hero-actions{ display:flex; flex-wrap:wrap; gap:var(--s2); margin-top:var(--s4) }
 
-.statrow{ display:grid; gap:var(--s4); margin-top:var(--s6);
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr)) }
-.statrow .label{ margin-top:var(--s2); color:var(--faint-on-d); line-height:1.5 }
+.statrow{
+  display:grid;
+  gap:var(--s4);
+  grid-template-columns:repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  margin-top:var(--s6);
+}
+.statrow .label{ margin-top:var(--s2) }
 
 
 /* ==========================================================================
@@ -306,12 +337,12 @@ a.card:hover{ transform:translateY(-2px) }
    ========================================================================== */
 
 .grid{ display:grid; gap:var(--s3) }
-.grid--3{ grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)) }
-.grid--2{ grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)) }
+.grid--3{ grid-template-columns:repeat(auto-fit, minmax(min(100%, 16rem), 1fr)) }
+.grid--2{ grid-template-columns:repeat(auto-fit, minmax(min(100%, 20rem), 1fr)) }
 
 
 /* ==========================================================================
-   PLACEHOLDER · remove as each chunk lands
+   PLACEHOLDER, remove as each chunk lands
    ========================================================================== */
 
 .todo{
@@ -320,30 +351,13 @@ a.card:hover{ transform:translateY(-2px) }
   padding:var(--s4);
   font-family:var(--mono);
   font-size:var(--t-small);
-  color:var(--faint);
+  color:var(--mute);
 }
-:is(.band--dark,.hero,.page-head,.card--dark) .todo{ border-color:var(--hair-on-d); color:var(--faint-on-d) }
 
 
 /* ==========================================================================
-   RESPONSIVE
+   PREFERENCES. Not a breakpoint, a user setting.
    ========================================================================== */
-
-@media (max-width:760px){
-  :root{ --s6:3rem; --s7:4rem }
-  .site-head{ padding-block:.75rem }
-  .site-head .wrap{ flex-wrap:wrap; gap:var(--s2) }
-  .site-nav{ margin-left:0; width:100%; gap:var(--s3) }
-  .hero{ padding-block:var(--s5) var(--s6) }
-
-  /* The footer's 220px brand column plus a 130px link column overflows a
-     phone. Collapse it rather than letting the page scroll sideways. */
-  .foot-top{ grid-template-columns:1fr 1fr; gap:var(--s3) }
-}
-
-@media (max-width:430px){
-  .foot-top{ grid-template-columns:1fr }
-}
 
 @media (prefers-reduced-motion:reduce){
   *{ animation:none !important; transition:none !important }

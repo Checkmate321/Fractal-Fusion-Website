@@ -1,6 +1,6 @@
 /* ==========================================================================
-   FRACTAL FUSION — main.js
-   Chunk 1: header/footer injection + active nav.
+   FRACTAL FUSION, main.js
+   Chunk 1: header and footer injection, plus active nav.
    ========================================================================== */
 
 /* Pull a partial into an element by id. */
@@ -10,7 +10,7 @@ function include(id, file) {
 
   return fetch(file)
     .then(function (res) {
-      if (!res.ok) throw new Error(file + ' → ' + res.status);
+      if (!res.ok) throw new Error(file + ' returned ' + res.status);
       return res.text();
     })
     .then(function (html) { host.innerHTML = html; })
@@ -21,7 +21,7 @@ function include(id, file) {
 }
 
 /* Mark the current page in the nav.
-   Must run AFTER the header lands — the links do not exist before that. */
+   Must run AFTER the header lands, because the links do not exist before that. */
 function markActiveNav() {
   var page = document.body.dataset.page;
   if (!page) return;
