@@ -853,6 +853,21 @@ a.card:active{ transform:translateY(0) }
    than the pair sharing a left edge. */
 .stats .statrow > div{ flex:0 1 auto; min-width:0; text-align:center }
 .stats .statrow .label{ white-space:nowrap }
+
+/* The clock cannot give any width back. Its digits are nowrap by the rule
+   above, so when the row runs short the flex algorithm takes width off this
+   cell anyway and the time spills out of it. Holding it at its own size sends
+   the shortfall to the two cells that can absorb it. */
+.stats .statrow > .statcell--timer{ flex-shrink:0 }
+
+/* One exception to that nowrap, at the width where it stops being possible.
+   A label of two short words fits three-across down to 320px; "Views
+   (socials)" is longer than that. Below this the labels may break, so the row
+   keeps its three columns and gains a line rather than losing a number. Above
+   20rem every label still sets on one line and nothing changes. */
+@media (max-width:20rem){
+  .stats .statrow .label{ white-space:normal }
+}
 .stats .stat{ font-size:clamp(1.05rem, 4.6vw, 3.2rem) }
 
 
@@ -1592,6 +1607,13 @@ a.res-card:active{ transform:translateY(0); border-color:currentColor }
   font-size:var(--t-h3); font-stretch:118%; text-transform:uppercase;
 }
 .benefit p{ margin:0 }
+
+/* The outreach half of the same band. It follows the benefit grid rather than
+   opening a band of its own, so the page keeps alternating light and dark. The
+   top margin is what does the separating. */
+.outreach-intro{ margin-top:var(--s6) }
+.outreach-intro h2{ margin-bottom:var(--s2) }
+.outreach-list{ margin-top:var(--s3) }
 
 .contact-dl{
   margin:var(--s4) 0 0;

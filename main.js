@@ -371,18 +371,21 @@ function showViewCount(scope) {
   var site = counterSite();
   if (!el || !site) return;
 
-  fetch('https://' + site + '.goatcounter.com/counter/TOTAL.json')
+  /* no-store because the counter is served with Expires four hours out and no
+     validator, so a browser would otherwise hold the first number it saw for
+     the rest of the day. This skips that copy and asks every time. GoatCounter's
+     own cache still sits in front of the figure, so it is minutes old rather
+     than seconds, but it is no longer hours old on a returning visitor. */
+  fetch('https://' + site + '.goatcounter.com/counter/TOTAL.json', { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
     .then(function (d) {
       /* count is pageviews, count_unique is people. The label says views, so
          it is the first one. It arrives already grouped, like 1,204.
 
-         A zero is treated as nothing to say. A new counter reads 0 until the
-         first visit lands, and "0 views" in the footer of a page somebody is
-         looking at right now reads as broken rather than as new. */
+         A zero is a real answer and is shown as one. What stays hidden is the
+         absence of an answer: no field, or a counter that did not reply. */
       var n = d && d.count;
       if (n === undefined || n === null || n === '') return;
-      if (Number(String(n).replace(/,/g, '')) === 0) return;
 
       el.textContent = n + ' views';
       el.hidden = false;
