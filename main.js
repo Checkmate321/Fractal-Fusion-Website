@@ -28,6 +28,7 @@
                              entry.html and the latest three on the home page
        data/resources.json   downloads and guides on resources.html
        data/sponsors.json    the detailed list on sponsors.html
+       data/season.json      the season calendar the home page counts down to
 
    Log entries are sorted newest first at render time, so new ones are always
    appended to the end of the file and order never has to be thought about.
@@ -40,9 +41,10 @@
    ---------------------------------------------------------------------------
    PARTIALS            header and footer injection, active nav marking
    SPONSOR STRIP       the scrolling logo marquee on the home page
-   KICKOFF COUNTDOWN   the countdown to the season reveal
+   SEASON COUNTDOWN    the countdown to the next date on the calendar
    EXTERNAL LINKS      opens off site links in a new tab, adds rel safety
    HELPERS             escaping, date formatting, loading the log
+   LOG FIGURES         pictures inside an entry, and the card thumbnail
    LOG INDEX           the card grid and topic filters
    SINGLE ENTRY        one entry, rendered from the ?id= in the address
    HOME                the latest three entries
@@ -152,34 +154,79 @@ window.addEventListener('resize', function () {
 
 
 /* ==========================================================================
-   KICKOFF COUNTDOWN
-   The date lives in the markup, in the time element's datetime, so this only
-   formats it. Units drop off the front as the date closes in, so the readout
-   is never padded with a leading 0d. Two digits on everything but the days,
-   which keeps the string one width and stops it jittering every second.
+   SEASON COUNTDOWN
+   The home page shows one number: the time left until our next competition.
+   The calendar itself is data/season.json, the six events of the season, and
+   it is the only place those dates live.
+
+   An event whose when is empty is one Florida has not scheduled yet. It is
+   skipped, silently, because a blank there is the normal state of the file in
+   September, not a fault. Filling one in is all it takes to bring it into the
+   countdown.
+
+   As each date passes the readout rolls on to the one after it, so the strip
+   stays right from the first meet through the Championship without anyone
+   touching it. Once the last date is behind us it says so and stops, rather
+   than counting up or going blank.
+
+   The date written into the markup is the fallback. If the file will not load
+   the element keeps the date it was served with, which is a worse readout but
+   never a broken one, so a failure here cannot cost the page a whole cell.
+
+   Units drop off the front as a date closes in, so the readout is never
+   padded with a leading 0d. Two digits on everything but the days, which
+   keeps the string one width and stops it jittering every second.
    ========================================================================== */
+
+var SEASON_URL = 'data/season.json';
 
 function startKickoff() {
   var el = document.getElementById('kickoff');
   if (!el) return;
 
-  var when = Date.parse(el.getAttribute('datetime'));
-  if (isNaN(when)) return;               /* leave the written date in place */
-
   var label = el.nextElementSibling;
+
+  /* The markup's own date, used until the file arrives and if it never does. */
+  var events = [{
+    label: label ? label.textContent : '',
+    title: '',
+    at: Date.parse(el.getAttribute('datetime'))
+  }];
+  var timer;
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
 
-  function tick() {
-    var left = when - Date.now();
+  /* The first date still ahead of us, or -1 once the season is over. */
+  function nextIndex() {
+    var now = Date.now();
+    for (var i = 0; i < events.length; i++) {
+      if (!isNaN(events[i].at) && events[i].at > now) return i;
+    }
+    return -1;
+  }
 
-    if (left <= 0) {
-      el.textContent = 'Now';
-      if (label) label.textContent = 'FTC season under way';
+  function tick() {
+    var i = nextIndex();
+
+    if (i === -1) {
+      el.textContent = 'Done';
+      el.removeAttribute('datetime');
+      el.removeAttribute('title');
+      if (label) label.textContent = 'Season over';
       return true;                       /* nothing left to count */
     }
 
-    var secs  = Math.floor(left / 1000);
+    var ev = events[i];
+
+    /* Reassert these every tick rather than only on a rollover: it is one
+       assignment of an unchanged string, and it means the cell is right even
+       if the file lands mid second or the machine wakes from sleep. */
+    if (label && ev.label) label.textContent = ev.label;
+    if (ev.title) el.setAttribute('title', ev.title);
+    else el.removeAttribute('title');
+    el.setAttribute('datetime', new Date(ev.at).toISOString());
+
+    var secs  = Math.floor((ev.at - Date.now()) / 1000);
     var days  = Math.floor(secs / 86400);
     var hours = Math.floor(secs % 86400 / 3600);
     var mins  = Math.floor(secs % 3600 / 60);
@@ -193,8 +240,49 @@ function startKickoff() {
     return false;
   }
 
-  if (tick()) return;
-  var timer = setInterval(function () { if (tick()) clearInterval(timer); }, 1000);
+  function run() {
+    clearInterval(timer);
+    if (tick()) return;
+    timer = setInterval(function () { if (tick()) clearInterval(timer); }, 1000);
+  }
+
+  run();
+
+  fetch(SEASON_URL)
+    .then(function (res) {
+      if (!res.ok) throw new Error(SEASON_URL + ' returned ' + res.status);
+      return res.json();
+    })
+    .then(function (list) {
+      if (!Array.isArray(list) || !list.length) return;
+
+      var parsed = [];
+      for (var i = 0; i < list.length; i++) {
+        /* No date yet: the event is real, its date is simply not announced. */
+        if (!list[i].when) continue;
+
+        var at = Date.parse(list[i].when);
+        /* A date that will not parse is skipped rather than allowed to
+           swallow the cell: one bad line should cost one line. */
+        if (isNaN(at)) {
+          console.error('[season] unreadable date in ' + SEASON_URL + ': ' + list[i].when);
+          continue;
+        }
+        parsed.push({ label: list[i].label, title: list[i].title, at: at });
+      }
+      if (!parsed.length) return;
+
+      /* Sorted here so the file can be kept in whatever order reads best. */
+      parsed.sort(function (a, b) { return a.at - b.at; });
+      events = parsed;
+      run();
+    })
+    .catch(function (err) {
+      /* The markup's date is already counting, so this is a note, not a stop.
+         Most often it is the site being opened from the file system rather
+         than served. See the note at the top of this file. */
+      console.error('[season]', err);
+    });
 }
 
 startKickoff();
@@ -289,12 +377,166 @@ function sampleFlag(entry) {
 
 
 /* --------------------------------------------------------------------------
+   LOG FIGURES
+
+   A body item is either a paragraph of text or a picture block, and both live
+   in the same list. That is what lets a photograph sit beside the sentence it
+   belongs to instead of in a heap at the end of the entry.
+
+       "body": [
+         "The v2 plate bent after about forty cycles.",
+         { "figure": "files/img/log/<id>/01.jpg",
+           "alt": "The bent plate, seen from the side",
+           "caption": "Forty cycles. The bend is the failure, not the wear." },
+         "So v3 moved the wheels forward 8mm.",
+         { "figure": "files/img/log/<id>/02.jpg", "alt": "The v3 intake" }
+       ]
+
+   Pictures stack, one after another, in the order they are written. A block
+   in the middle of the list falls between those two paragraphs; a block at
+   the end of the list falls at the end of the entry. Nothing else decides
+   where a picture goes.
+
+   Pictures written next to each other are put in a row together, so two of
+   one moment sit side by side rather than one after the other down the page.
+   Separate them with a paragraph and they go back to standing alone.
+
+   layout is either inline, the default, which holds the picture to the width
+   of the text, or wide, which lets it run the full width of the band for CAD
+   and screenshots that are unreadable any narrower.
+   -------------------------------------------------------------------------- */
+
+/* An entry can carry alt text, and where it does it is used. Where it does
+   not, the alt is left empty rather than filled with the caption: a caption is
+   already on the page and read out with the picture, so repeating it there
+   would only say the same thing twice. */
+function figureImgHTML(img) {
+  var alt = img.alt || '';
+  return '<img src="' + esc(img.src) + '" alt="' + esc(alt) + '"' +
+         (img.width  ? ' width="'  + esc(img.width)  + '"' : '') +
+         (img.height ? ' height="' + esc(img.height) + '"' : '') +
+         ' loading="lazy" decoding="async">';
+}
+
+function figureHTML(img, cls) {
+  return '<figure class="entry-figure' + (cls ? ' ' + cls : '') + '">' +
+           figureImgHTML(img) +
+           (img.caption
+             ? '<figcaption class="label">' + esc(img.caption) + '</figcaption>'
+             : '') +
+         '</figure>';
+}
+
+/* Reads one picture block, whichever of the shapes above it was written in.
+   Anything unrecognised renders as nothing rather than as broken markup. */
+function figureBlockHTML(block) {
+  var wide = block.layout === 'wide' ? 'entry-figure--wide' : '';
+
+  /* Two or more in one block go in a row. They are capped to a shared height
+     rather than a shared width, so whatever their shapes they come out the
+     same size on the page, and a row that will not fit the window wraps and
+     stacks instead of shrinking to nothing. */
+  if (Array.isArray(block.figures)) {
+    var list = block.figures.filter(function (f) { return f && f.src; });
+    if (!list.length)      return '';
+    if (list.length === 1) return figureHTML(list[0], wide);
+
+    return '<div class="entry-figures">' +
+             list.map(function (f) { return figureHTML(f, ''); }).join('') +
+           '</div>';
+  }
+
+  var src = block.figure || block.src;
+  if (!src) return '';
+
+  return figureHTML({
+    src: src, alt: block.alt, caption: block.caption,
+    width: block.width, height: block.height
+  }, wide);
+}
+
+/* Walks the body and puts neighbouring pictures into a row together. A run of
+   one is left as it is, so a picture with paragraphs either side still stands
+   alone at full size. The row wraps, so a run of more than will fit the window
+   stacks rather than shrinking to stamps. */
+function entryBodyHTML(body) {
+  var out = [];
+  var run = [];
+
+  /* Two to a row, and no more. Left to fit as many as the width allowed, a run
+     of four would come out three and then one, which reads as a mistake. Two
+     and two reads as a decision. An odd one at the end of a run stands alone
+     at full size, which is the right place for it anyway. */
+  function flush() {
+    for (var i = 0; i < run.length; i += 2) {
+      var row = run.slice(i, i + 2);
+      out.push(row.length === 1
+        ? row[0]
+        : '<div class="entry-figures">' + row.join('') + '</div>');
+    }
+    run = [];
+  }
+
+  (body || []).forEach(function (block) {
+    if (typeof block === 'string') {
+      flush();
+      out.push('<p>' + esc(block) + '</p>');
+      return;
+    }
+    if (!block || typeof block !== 'object') return;
+
+    var html = figureBlockHTML(block);
+    if (!html) return;
+
+    /* A figures list is already a row of its own, and a wide picture is meant
+       to stand by itself, so neither joins the run beside it. */
+    if (Array.isArray(block.figures) || block.layout === 'wide') {
+      flush();
+      out.push(html);
+      return;
+    }
+
+    run.push(html);
+  });
+
+  flush();
+  return out.join('');
+}
+
+/* Which picture stands for the entry on a card is an editorial decision, not
+   whichever one happens to come first: an opening figure is often a detail
+   shot that is illegible at card size. thumb settles it, and the rest of this
+   is a fallback for entries that do not set one. */
+function entryThumb(entry) {
+  if (entry.thumb && entry.thumb.src) return entry.thumb;
+
+  var found = null;
+  (entry.body || []).some(function (b) {
+    if (!b || typeof b !== 'object') return false;
+    if (Array.isArray(b.figures)) {
+      found = b.figures.filter(function (f) { return f && f.src; })[0] || null;
+      return !!found;
+    }
+    var src = b.figure || b.src;
+    if (src) { found = { src: src }; return true; }
+    return false;
+  });
+  if (found) return found;
+
+  return (entry.images && entry.images.length) ? entry.images[0] : null;
+}
+
+
+/* --------------------------------------------------------------------------
    LOG INDEX
    -------------------------------------------------------------------------- */
 
 function cardHTML(entry) {
-  var thumb = (entry.images && entry.images.length)
-    ? '<img class="log-thumb" src="' + esc(entry.images[0].src) + '" alt="" loading="lazy">'
+  /* The card's alt is empty on purpose: the heading beside it already names
+     the entry, so describing the picture again only repeats the link. */
+  var pic   = entryThumb(entry);
+  var thumb = pic
+    ? '<img class="log-thumb" src="' + esc(pic.src) + '" alt="" loading="lazy">'
     : '';
 
   return '' +
@@ -315,12 +557,6 @@ function renderLogIndex(entries) {
   var params = new URLSearchParams(location.search);
   var active = params.get('topic');
   if (TOPICS.indexOf(active) === -1) active = 'All';
-
-  /* Only topics with entries behind them get a button, so no filter can lead
-     to an empty page. */
-  var present = TOPICS.filter(function (t) {
-    return entries.some(function (e) { return e.topic === t; });
-  });
 
   function paint() {
     var shown = (active === 'All')
@@ -346,7 +582,11 @@ function renderLogIndex(entries) {
   }
 
   if (filters) {
-    filters.innerHTML = ['All'].concat(present).map(function (t) {
+    /* Every topic gets a button, whether or not anything is filed under it
+       yet. The row is the shape of the log as a whole, so a season that has
+       not reached a subsystem yet still says so, and a filter that finds
+       nothing says that rather than disappearing. */
+    filters.innerHTML = ['All'].concat(TOPICS).map(function (t) {
       return '<button type="button" data-topic="' + esc(t) + '">' + esc(t) + '</button>';
     }).join('');
 
@@ -401,15 +641,12 @@ function renderEntry(entries) {
 
   document.title = e.title + ' | Fractal Fusion, FTC 27188';
 
-  var body = (e.body || []).map(function (p) {
-    return '<p>' + esc(p) + '</p>';
-  }).join('');
+  var body = entryBodyHTML(e.body);
 
+  /* Entries written before pictures could sit inside the body keep theirs in
+     a top level images list. Those still render, after the text, as they did. */
   var figures = (e.images || []).map(function (img) {
-    return '<figure class="entry-figure">' +
-             '<img src="' + esc(img.src) + '" alt="' + esc(img.caption || '') + '" loading="lazy">' +
-             (img.caption ? '<figcaption class="label">' + esc(img.caption) + '</figcaption>' : '') +
-           '</figure>';
+    return figureHTML(img, '');
   }).join('');
 
   var nav = '';
@@ -426,15 +663,15 @@ function renderEntry(entries) {
 
   host.innerHTML = '' +
     '<section class="page-head"><div class="wrap">' +
-      '<span class="label">' + esc(e.topic) + ' &middot; ' + fmtDate(e.date) + '</span>' +
+      '<span class="label">' + esc(e.topic) + ' &middot; ' + fmtDate(e.date) +
+        (e.author ? ' &middot; ' + esc(e.author) : '') + '</span>' +
       '<h1>' + esc(e.title) + '</h1>' +
       '<div class="rule"></div>' +
       '<p class="lede">' + esc(e.summary) + '</p>' +
       sampleFlag(e) +
     '</div></section>' +
     '<section class="band band--light"><div class="wrap">' +
-      '<div class="entry-body measure">' + body + '</div>' +
-      figures +
+      '<div class="entry-body">' + body + figures + '</div>' +
       nav +
     '</div></section>';
 }
@@ -511,7 +748,6 @@ function resourceHTML(r) {
   var live = r.href && !r.placeholder;
 
   var inner =
-    '<span class="res-type">' + esc(r.type) + '</span>' +
     '<h3>' + esc(r.title) + '</h3>' +
     '<p class="res-summary">' + esc(r.summary) + '</p>' +
     '<span class="res-meta label">' + esc(r.meta || '') + '</span>';
@@ -520,8 +756,9 @@ function resourceHTML(r) {
     return '<div class="card card--line res-card is-pending">' + inner + '</div>';
   }
 
-  /* download asks the browser to save the file rather than try to render it,
-     which matters for the CAD models. */
+  /* download asks the browser to save the file rather than try to render it.
+     Nothing here is a file at the moment, the CAD lives in Onshape, but an
+     entry that is one again only has to set the flag. */
   return '<a class="card card--line res-card" href="' + esc(r.href) + '"' +
          (r.download ? ' download' : ' rel="noopener"') + '>' + inner + '</a>';
 }
@@ -537,6 +774,10 @@ function renderResources() {
     })
     .then(function (list) {
       host.innerHTML = list.map(resourceHTML).join('');
+      /* These cards land long after the sweep at load, so they are swept
+         again here. Without this the CAD link, which points at Onshape,
+         would open over the top of the page instead of in its own tab. */
+      markExternalLinks(host);
     })
     .catch(function (err) {
       console.error('[resources]', err);
@@ -592,8 +833,8 @@ function buildLogEntry(form) {
     topic: get('topic') || 'Misc',
     title: title,
     summary: get('summary'),
-    body: body.length ? body : [''],
-    images: []
+    author: get('author'),
+    body: body.length ? body : ['']
   };
 }
 
@@ -623,9 +864,20 @@ function composeLogEntry(form) {
   lines.push('named with the date.');
   if (folder) lines.push(folder.href);
   lines.push('');
-  lines.push('Download them into files/log/' + entry.id + '/, rename 01, 02, then');
-  lines.push('add one { "src": ..., "caption": "" } per photo to images.');
-  lines.push('If there are none, images stays [].');
+  lines.push('Download them into files/img/log/' + entry.id + '/ and rename 01, 02.');
+  lines.push('');
+  lines.push('Then put each one into body, at the point in the text it belongs to:');
+  lines.push('');
+  lines.push('  { "figure": "files/img/log/' + entry.id + '/01.jpg",');
+  lines.push('    "alt": "what the picture shows",');
+  lines.push('    "caption": "what it does not show" }');
+  lines.push('');
+  lines.push('and add a thumb for the card, using whichever picture is most');
+  lines.push('recognisable at card size:');
+  lines.push('');
+  lines.push('  "thumb": { "src": "files/img/log/' + entry.id + '/01.jpg" }');
+  lines.push('');
+  lines.push('If there are no photos, leave the entry exactly as it is above.');
 
   var msg = form.querySelector('[name="message"]');
   if (msg) msg.value = lines.join('\n');
@@ -1023,6 +1275,50 @@ function buildRobot(stage) {
      while the element is still detached. Setting it before appending left the
      ratio at 1 and the robot oversized on every narrow window. */
   mv.setAttribute('camera-orbit', restingOrbit(mv));
+
+  /* Appending upgrades the element, so the shadow root is usually there by
+     now. Usually is not always, and the model landing is the later, certain
+     moment, so that is the second try. */
+  if (!invertWheelZoom(mv)) {
+    mv.addEventListener('load', function () { invertWheelZoom(mv); }, { once: true });
+  }
+}
+
+/* Scroll down to zoom in, up to zoom out, which is the opposite of what
+   model-viewer does out of the box and the same as what every CAD tool this
+   robot was drawn in does. Anyone who reaches for the model is reaching for it
+   the way they reach for Onshape, so it matches Onshape.
+
+   There is no attribute for this, and the wheel cannot simply be caught and
+   its delta negated, because deltaY on a real event is read only. So the real
+   event is stopped and a copy of it, flipped, is handed to the viewer instead.
+
+   Two details make that safe. The listener sits on the host in the capture
+   phase, which runs before the viewer's own listener on the .userInput node
+   inside its shadow root, so stopping it there means the viewer never sees the
+   original. And the copy is dispatched with composed left at its default of
+   false, so it stays inside the shadow root and cannot climb back out to this
+   same listener and loop.
+
+   If the internals ever move and that node is not found, nothing is bound and
+   the wheel keeps working the way it always did. An inverted scroll is worth
+   having; it is not worth a robot that will not zoom. */
+function invertWheelZoom(mv) {
+  var input = mv.shadowRoot && mv.shadowRoot.querySelector('.userInput');
+  if (!input) return false;
+
+  mv.addEventListener('wheel', function (ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    input.dispatchEvent(new WheelEvent('wheel', {
+      deltaY: -ev.deltaY,
+      deltaMode: ev.deltaMode,
+      cancelable: true
+    }));
+  }, { capture: true, passive: false });
+
+  return true;
 }
 
 function initHeroRobot() {

@@ -38,7 +38,7 @@ main.js                                   the only script
 data/                                     content that grows (JSON)
 files/logos/                              team and sponsor logos
 files/audio/click.wav                     UI click, played by main.js
-files/log/                                photos, one folder per log entry
+files/img/log/                            photos, one folder per log entry
 files/CAD/                                robot models
 files/vendor/                             model-viewer and its Draco decoder
 ```
@@ -116,14 +116,51 @@ means editing both**. Say the word and the marquee can read from the same JSON.
 Every supplied logo is dark ink on transparency, so the wall belongs on a light
 band. Do not move it onto navy.
 
+## The season countdown
+
+`data/season.json` is the calendar the home page counts down to: our six
+competitions, in order. Each entry has a `title` for the hover, a short `label`
+for the line under the number, and a `when`, an ISO date **with its offset**
+(`-04:00` in daylight time, `-05:00` in winter).
+
+**Two of the six have no date yet**, meet 2 and the Florida Championship. They
+carry an empty `when` and are skipped until one is filled in, which is the only
+edit adding an event takes. Watch <https://ftc-events.firstinspires.org/>,
+`flfirst.org` and the Orlando Robotics League calendar.
+
+The scheduled ones are meet 1 on 14 November 2026, meet 3 on 16 January 2027
+and the League Championship on 6 February 2027, all Saturdays. **The 9 am start
+times on those three are a placeholder**, not a published time: only the day
+was given to us. They are close enough that the number of days left is right,
+which is what the cell is read for, but correct the hour if you learn it.
+
+`main.js` counts to the first date still ahead and rolls on to the next as each
+passes, so a passing event needs no edit. Order in the file is free; it is
+sorted on load. Once every date is behind us the cell reads "Season over".
+
+Two things to keep in step by hand:
+
+- **The fallback date in `index.html`.** The `<time>` in the stat row carries
+  the last event's date, and it is what shows with no script or with the file
+  unreachable. If the Championship date moves, move it in both places.
+- **`label` stays two short words.** The home page holds its three numbers on
+  one line down to a 320px phone, and a long label becomes the widest thing in
+  its cell and breaks the row.
+
 ## Resources
 
 `data/resources.json` drives `resources.html`. An entry with `"placeholder": true`
 or an empty `href` renders as a non clickable card marked "in progress", so the
 page can advertise work that is coming without offering a dead link.
 
-The robot models in `files/CAD/` are real downloads. `.gitattributes` marks
-`.glb` as binary so line ending normalisation can never corrupt them.
+**The CAD is a link to Onshape now, not a download.** The page used to offer
+three GLB exports; it offers the live document instead, which is the thing
+people actually want. Export files go stale the day after they are made, and a
+GLB cannot be taken apart or measured the way the assemblies can.
+
+An entry can still be a file: set `"download": true` and point `href` at it.
+`.gitattributes` marks `.glb` as binary so line ending normalisation can never
+corrupt one.
 
 ## The robot in the hero
 
@@ -131,8 +168,11 @@ The robot models in `files/CAD/` are real downloads. `.gitattributes` marks
 `<model-viewer>` showing `files/CAD/26Worlds-web.glb`, Sierah, turning slowly.
 
 **`26Worlds-web.glb` is generated, not authored.** It is `26Worlds.glb` with its
-primitives merged, and it is the file the site loads. Keep the original as the
-source of truth and regenerate the web copy if the CAD changes:
+primitives merged, and it is the file the site loads. Those two are the only
+models left in `files/CAD/`; the 2025 states and off season exports were
+deleted with the download list and are in the git history if they are ever
+wanted again. Keep `26Worlds.glb` as the source of truth and regenerate the web
+copy if the CAD changes:
 
 ```
 npx @gltf-transform/cli optimize <in>.glb <out>.glb --compress draco
@@ -277,9 +317,6 @@ ever edited.
 
 ## Before this goes live
 
-- [ ] **Replace the fixture log entries.** They are invented placeholders written
-      to test the schema. A site whose purpose is a credible record cannot ship
-      with made up engineering history on it.
 - [ ] **Swap the donate URL on `sponsors.html`.** It currently points at the
       enquiry form and is marked as a placeholder on the page itself.
 - [ ] Point the Web3Forms key at the team address. It currently delivers to a
@@ -313,7 +350,7 @@ All eight chunks are done.
 4. Landing page
 5. Sponsors
 6. Partners
-7. Resources: `data/resources.json`, including the three robot GLB files
+7. Resources: `data/resources.json`
 8. About, 404, sitemap, robots.txt
 
 ## Deploying

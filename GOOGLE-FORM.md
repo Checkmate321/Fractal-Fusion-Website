@@ -26,11 +26,11 @@ Copy button, so whoever fills it in can hand it over directly.
   "topic": "Mechanical",
   "title": "Intake v3, compliant wheels",
   "summary": "Cycle time down 0.6 seconds.",
+  "author": "Nathan L",
   "body": [
     "Tubing lost grip.",
     "Compliant wheels held it."
-  ],
-  "images": []
+  ]
 }
 ```
 
@@ -41,11 +41,11 @@ paragraph.
 **It cannot take image uploads**, because that needs a paid Web3Forms plan.
 Photos go in the shared Drive folder instead, which the page links to directly:
 
-<https://drive.google.com/drive/folders/1cJLtyvKgX_VOBTnc9yhG80O-y_sLMR4x?usp=sharing>
+<https://drive.google.com/drive/folders/1v2ECKY4P1JFVl_UeO-TdGDt81It-BCnY>
 
 Start the filename with the date, like `2026-09-14-intake`, so photos can be
 matched to the right entry later. Every submission email carries the folder link
-alongside the `files/log/<id>/` path they need to end up in, so no separate
+alongside the `files/img/log/<id>/` path they need to end up in, so no separate
 description is needed.
 
 To change the folder, edit the `href` on the `#photo-folder` button in
@@ -166,14 +166,16 @@ Working from the spreadsheet instead:
    * `id` is the date, then two or three words from the title, lowercase with
      hyphens. `2026-02-14-intake-v3`.
    * `body` is the long answer, **split into one quoted string per paragraph**.
-   * Delete the `"placeholder": true` line. That flag is only for the sample
-     entries that shipped with the site.
+   * `author` is the **Your name** answer, shortened to a first name and last
+     initial.
 5. If there are photos:
-   * Make a folder `files/log/<id>/`
+   * Make a folder `files/img/log/<id>/`
    * Download them from the Drive folder, rename `01.jpg`, `02.jpg`
    * Resize anything wider than about 2000px
-   * Add one `{ "src": ..., "caption": "" }` per photo to `images`
-   * No photos means `"images": []`
+   * Add each one to `body`, at the point in the text it belongs to, as
+     `{ "figure": "...", "alt": "...", "caption": "..." }`
+   * Add a `"thumb"` for the card
+   * See [ADDING-A-LOG-ENTRY.md](ADDING-A-LOG-ENTRY.md) for placement and wide images
 6. Check it: `python3 -m http.server 8000` then open
    <http://localhost:8000/log.html>. The new entry should be at the top.
 7. Commit and push.

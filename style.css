@@ -602,14 +602,29 @@ a.card:active{ transform:translateY(0) }
    one opening rather than reading as a slab and then the page. That is also
    why the bottom padding is shorter than the top: with no colour change to
    justify it, a full --s6 either side left the title stranded from its own
-   content. The hairline carries the edge the tone change used to. */
+   content.
+
+   No hairline along the bottom, and no edge of any kind. The head and the
+   band under it are one ground and one opening, and a line across it drew a
+   seam where there is no change to mark. What separates them now is only the
+   space, which is why that space is short: the two steps below add to about
+   half what the line used to sit inside, close enough that the title reads as
+   belonging to the text rather than as a slab above it. */
 .page-head{
   background:var(--light); color:var(--dark);
-  padding-block:var(--s5) var(--s4);
-  border-bottom:1px solid var(--hair);
+  padding-block:var(--s5) var(--s3);
 }
+/* The top margin is the gap under the label. A head that opens straight on
+   its title has no label to clear, and the section's own padding is already
+   the space it wants. */
 .page-head h1{ margin-top:var(--s2); max-width:16ch }
+.page-head h1:first-child{ margin-top:0 }
 .page-head .lede{ margin-top:var(--s3); max-width:52ch }
+
+/* The band straight after a head is a continuation of that opening, not a new
+   section, so it starts on a shorter step than a band that follows a real
+   change of ground. */
+.page-head + .band{ padding-top:var(--s4) }
 
 
 /* ==========================================================================
@@ -869,7 +884,10 @@ a.card:active{ transform:translateY(0) }
 .log-grid{
   display:grid;
   gap:var(--s3);
-  grid-template-columns:repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  /* auto-fill, not auto-fit: empty tracks are kept, so a filter that leaves
+     one or two entries gets cards the same width as the unfiltered grid
+     instead of stretching them across the band. */
+  grid-template-columns:repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
 }
 
 .log-card{ padding:0; overflow:hidden; display:flex; flex-direction:column }
@@ -901,12 +919,70 @@ a.card:active{ transform:translateY(0) }
 
 /* ---- single entry ---- */
 
+/* The body runs the full width of the band and the prose is held to the
+   measure inside it, rather than the other way round. That is what lets a
+   wide figure break out of the column of text while the text itself stays
+   readable. */
 .entry-body{ font-size:var(--t-lede); line-height:1.68 }
-.entry-body p{ margin-bottom:var(--s3) }
+.entry-body > p{ margin-bottom:var(--s3); max-width:var(--wrap-text) }
 
-.entry-figure{ margin:var(--s5) 0 0; max-width:var(--wrap-text) }
-.entry-figure img{ width:100%; border-radius:var(--radius) }
-.entry-figure figcaption{ margin-top:var(--s2) }
+/* Pictures are capped by HEIGHT, not width, and this is the reason: the photos
+   come off phones, so they are portrait, and a 3:4 photograph at the width of
+   the text stands 880px tall. That is taller than the window it is being read
+   in, so the picture never appears in full and its caption is never on screen
+   beside it. Capping the height puts the whole of both in view at once. Width
+   then follows from the shape of the picture, which is why a tall one comes
+   out narrower than a wide one rather than all of them matching.
+
+   The px half of the min() stops a very tall window blowing the pictures up
+   past the point where more size tells you anything. */
+.entry-body{
+  --figure-h:min(72vh, 720px);
+  /* The width actually available inside the band. It has to be stated in these
+     terms, not as a percentage: a figure shrinks to fit its picture, and a
+     percentage measured against a box that is itself measured from its contents
+     resolves to nothing, which is how a phone photo ends up wider than the
+     phone. Mirrors the gutters .wrap sets. */
+  --band-w:calc(100vw - 2 * clamp(1rem, 4vw, 2rem));
+  --figure-w:min(var(--wrap-text), var(--band-w));
+}
+
+/* Figures sit in the run of text, so they need air above and below, not just
+   above: a picture between two paragraphs belongs to neither. The figure
+   shrinks to its picture so the caption sets to that width too, rather than
+   running on past the edge of what it captions. */
+.entry-figure{ margin:var(--s5) 0; width:fit-content; max-width:100% }
+.entry-figure img{
+  display:block;
+  width:auto; height:auto;
+  max-width:var(--figure-w);
+  max-height:var(--figure-h);
+  /* The card radius, not the control radius: a photograph is a slab on the
+     page like a card is, and the two read as the same family at a glance. */
+  border-radius:var(--radius-lg);
+}
+.entry-figure figcaption{ margin-top:var(--s2); max-width:var(--figure-w) }
+
+/* One per entry, at most. The break in rhythm is the whole point of it, and
+   it stops being a break if everything does it. Screenshots and CAD live
+   here, being unreadable at the width of the text. */
+.entry-figure--wide{ --figure-w:min(var(--wrap), var(--band-w)) }
+
+/* Two pictures of one thing, side by side. The shared height cap is what makes
+   the row read as a row: both come out the same height whatever their shapes,
+   so the eye can move across instead of resizing itself at every gap. It is a
+   lower cap than a lone picture gets, because two of them have to share the
+   width. flex-wrap is the narrow-window behaviour: rather than shrink the pair
+   to stamps, the row breaks and they stack. */
+.entry-figures{
+  display:flex; flex-wrap:wrap; align-items:flex-start;
+  gap:var(--s3);
+  margin:var(--s5) 0;
+  --figure-h:min(56vh, 520px);
+  /* Two of them share the band between them, less the gap. */
+  --figure-w:calc((min(var(--wrap), var(--band-w)) - var(--s3)) / 2);
+}
+.entry-figures .entry-figure{ margin:0; flex:0 1 auto; min-width:0 }
 
 .entry-nav{
   display:flex; flex-wrap:wrap; gap:var(--s3);
@@ -1297,26 +1373,16 @@ a.sponsor-tile img{ transition:transform .25s ease }
    ========================================================================== */
 
 .res-card{ display:grid; align-content:start; gap:var(--s2); padding:var(--s3) }
-.res-type{
-  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
-  letter-spacing:.13em; text-transform:uppercase;
-  justify-self:start;
-  padding:.3rem .55rem; border-radius:2px;
-  background:var(--c1); color:var(--dark);
-}
 .res-summary{ color:var(--mute); font-size:var(--t-small); margin:0 }
 .res-meta{ margin-top:auto; padding-top:var(--s1) }
 
 /* An entry with no file yet. It stays visible so planned work can be
    announced, but it is not an anchor and does not invite a click. */
 .res-card.is-pending{ opacity:.72 }
-.res-card.is-pending .res-type{ background:transparent; color:inherit; border:1px solid var(--hair) }
 
 a.res-card{ transition:transform .16s ease, border-color .16s ease }
 a.res-card:hover{ transform:translateY(-2px); border-color:currentColor }
 a.res-card:active{ transform:translateY(0); border-color:currentColor }
-
-.res-foot{ margin-top:var(--s4) }
 
 
 /* ==========================================================================
@@ -1506,6 +1572,18 @@ a.res-card:active{ transform:translateY(0); border-color:currentColor }
    same as every wider screen. What it cannot keep is the full size of those
    parts, because at 320px the row is 74px short of holding them.
    ========================================================================== */
+
+/* Side by side stops being worth it once each picture would be narrower than a
+   playing card. Below this the row keeps its gap but gives every picture a full
+   line, and they go back to the height a lone picture gets. */
+@media (max-width:48rem){
+  .entry-figures{
+    gap:var(--s4);
+    --figure-w:var(--band-w);
+    --figure-h:min(72vh, 720px);
+  }
+  .entry-figures .entry-figure{ flex:1 1 100% }
+}
 
 @media (max-width:37rem){
 

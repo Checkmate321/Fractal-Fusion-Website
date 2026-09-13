@@ -1,0 +1,44 @@
+[
+  {
+    "id": "scrimmage",
+    "label": "To scrimmage",
+    "title": "Preseason scrimmage, Saturday 17 October 2026",
+    "when": "2026-10-17T09:00:00-04:00"
+  },
+  {
+    "id": "meet-1",
+    "label": "To meet 1",
+    "title": "League meet 1, Saturday 14 November 2026",
+    "when": "2026-11-14T09:00:00-05:00"
+  },
+  {
+    "id": "meet-2",
+    "label": "To meet 2",
+    "title": "League meet 2",
+    "when": ""
+  },
+  {
+    "id": "meet-3",
+    "label": "To meet 3",
+    "title": "League meet 3, Saturday 16 January 2027",
+    "when": "2027-01-16T09:00:00-05:00"
+  },
+  {
+    "id": "league-championship",
+    "label": "To leagues",
+    "title": "League Championship Tournament, Saturday 6 February 2027",
+    "when": "2027-02-06T09:00:00-05:00"
+  },
+  {
+    "id": "states",
+    "label": "To states",
+    "title": "Florida Championship",
+    "when": ""
+  },
+  {
+    "id": "worlds",
+    "label": "To Worlds",
+    "title": "FIRST Championship, Houston",
+    "when": "2027-04-28T08:00:00-05:00"
+  }
+]

@@ -72,12 +72,19 @@
           <span class="label">Views</span>
         </div>
         <div>
-          <!-- BIOBUZZ reveal, Saturday 12 September 2026 at 12:00 pm ET, per
-               firstinspires.org. datetime is the only place the date lives:
-               main.js counts down from it, and with no script the element
-               still reads as the date it points at. -->
-          <time class="stat stat--timer" id="kickoff" datetime="2026-09-12T12:00:00-04:00">Sep 12</time>
-          <span class="label">To kickoff</span>
+          <!-- Our competitions live in data/season.json, in order. main.js
+               counts down to the first one still ahead and rolls on to the
+               next as each passes, so this never needs touching again once
+               the dates are in.
+
+               What is written here is the last of them, the FIRST
+               Championship on 28 April 2027, because it is the one date the
+               season already knows. It is the fallback: with no script, or
+               with the file unreachable, the element still reads as a real
+               date rather than as nothing. Keep it in step with the last
+               entry in that file. -->
+          <time class="stat stat--timer" id="kickoff" datetime="2027-04-28T08:00:00-05:00">Apr 28</time>
+          <span class="label">To Worlds</span>
         </div>
       </div>
     </div>

@@ -1,47 +1,16 @@
 [
   {
-    "id": "cad-26-worlds",
-    "title": "Worlds 2026 robot, full CAD",
-    "type": "CAD",
-    "summary": "The robot we took to the Ross Division at the FIRST World Championship, as a single GLB you can open in any glTF viewer, Blender, Onshape or Fusion.",
-    "href": "files/CAD/26Worlds.glb",
-    "meta": "GLB, 10.5 MB",
-    "download": true
+    "id": "cad-onshape",
+    "title": "25-26 Worlds CAD",
+    "summary": "Sierah, the robot we took to the Ross Division at the FIRST World Championship.",
+    "href": "https://cad.onshape.com/documents/9589a090c47cacd90c906963/w/6c94b130ba27092660418b06/e/cee6db203832cfa4bdea3ef4",
+    "meta": "Click to open"
   },
   {
-    "id": "cad-25-states",
-    "title": "States 2025 robot, full CAD",
-    "type": "CAD",
-    "summary": "Our state championship robot. Useful next to the Worlds model if you want to see what a season of iteration actually changes.",
-    "href": "files/CAD/25States.glb",
-    "meta": "GLB, 9.2 MB",
-    "download": true
-  },
-  {
-    "id": "cad-25-offseason",
-    "title": "Off season 2025 robot, full CAD",
-    "type": "CAD",
-    "summary": "Built between seasons with no competition pressure, which makes it the cleanest of the three to read.",
-    "href": "files/CAD/25OffSeason.glb",
-    "meta": "GLB, 6.7 MB",
-    "download": true
-  },
-  {
-    "id": "guide-rookie-florida",
-    "title": "Start here: a rookie guide for Florida teams",
-    "type": "Guide",
-    "summary": "What we wish someone had told us in 2024. League structure, what to build first, and the things that are not worth your time in month one.",
-    "href": "",
-    "meta": "In progress",
-    "placeholder": true
-  },
-  {
-    "id": "postmortem-decode",
-    "title": "What went wrong in DECODE",
-    "type": "Postmortem",
-    "summary": "The mistakes that cost us matches, written up honestly. Almost nobody publishes these, which is exactly why they are worth reading.",
-    "href": "",
-    "meta": "In progress",
-    "placeholder": true
+    "id": "cad-onshape-states",
+    "title": "24-25 States CAD",
+    "summary": "Rosie, the robot we took to the Scott Division of the Florida Championship.",
+    "href": "https://cad.onshape.com/documents/2cea3088e7748a63a0e2803e/w/f7afa4c258cf68b11e7e6f04/e/30e8bac273c8dc57ae8d5697",
+    "meta": "Click to open"
   }
 ]

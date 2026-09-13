@@ -1,94 +1,27 @@
 [
   {
-    "id": "2025-10-04-pit-setup",
-    "date": "2025-10-04",
-    "topic": "Misc",
-    "title": "Pit organisation, and why it matters at 8am",
-    "summary": "We lost eleven minutes looking for a 3mm hex key at our first meet last season. Never again.",
-    "placeholder": true,
-    "body": [
-      "Every tool now lives in a shadow board with its own outline, and the board hangs on the inside of the pit wall where anyone can reach it without moving a person.",
-      "Spare parts are in labelled bins sorted by subsystem rather than by part type, because when something breaks you know which subsystem failed, not which category the replacement belongs to.",
-      "It sounds like housekeeping. It is really about how many match cycles you get between failures."
-    ],
-    "images": []
-  },
-  {
-    "id": "2025-11-15-stem-night",
-    "date": "2025-11-15",
+    "id": "2026-09-03-curriculum-night-at-oshs",
+    "date": "2026-09-03",
     "topic": "Outreach",
-    "title": "STEM night at the elementary school",
-    "summary": "Ninety kids, one very tired robot, and a driving line that never got shorter.",
-    "placeholder": true,
+    "title": "Curriculum Night at OSHS",
+    "summary": "Presenting our robot and robotics program to parents and students at our school.",
+    "author": "Nathan L",
     "body": [
-      "We brought last season's robot and let anyone who wanted to drive it do so for thirty seconds. That turned out to be the whole event. The line never got shorter.",
-      "Two things we would change. Bring a second controller so two people can drive at once, and bring a spare battery, because we ran flat with forty minutes still to go.",
-      "The question we got most often, by a wide margin, was how much the robot cost. We did not have a good answer ready. We do now."
+      "In collaboration with FRC team 4013 Clockwork Mania and FTC teams 17288 Rubber Bandits and 20344 Cattlebots, we showcased our robotics program to around 100 people that attended our school's (Orlando Science High School) curriculum night.",
+      { "figure": "files/img/log/2026-09-03-curriculum-night-at-oshs/05.jpg",
+        "caption": "Around a hundred people came through over the evening." },
+      { "figure": "files/img/log/2026-09-03-curriculum-night-at-oshs/07.jpg",
+        "caption": "17288 Rubber Bandits' bot and ours." },
+      { "figure": "files/img/log/2026-09-03-curriculum-night-at-oshs/01.jpg",
+        "caption": "Last season's banners hung behind the demo area." },
+      "Our demo included driving and shooting the worlds robot from last year and explaining the role our team plays in the greater community.",
+      { "figure": "files/img/log/2026-09-03-curriculum-night-at-oshs/09.jpg",
+        "caption": "Presenting to the room." },
+      { "figure": "files/img/log/2026-09-03-curriculum-night-at-oshs/02.jpg",
+        "caption": "The shooting demo." },
+      { "figure": "files/img/log/2026-09-03-curriculum-night-at-oshs/04.jpg"},
+      { "figure": "files/img/log/2026-09-03-curriculum-night-at-oshs/03.jpg" }
     ],
-    "images": [
-      { "src": "files/log/2025-11-15-stem-night/01.svg", "caption": "Placeholder. Swap for a real photograph before launch." }
-    ]
-  },
-  {
-    "id": "2025-12-06-classifier-cad",
-    "date": "2025-12-06",
-    "topic": "CAD",
-    "title": "Modelling the classifier before cutting anything",
-    "summary": "Two evenings in CAD saved a sheet of polycarbonate and probably a week.",
-    "placeholder": true,
-    "body": [
-      "The first version existed only as a sketch and a rough idea of where the sensor would sit. Modelling it properly exposed a collision between the sorting gate and the chassis rail that we would not have found until the part was already cut.",
-      "Moving the gate pivot up 14mm cleared it. That change took four minutes in CAD and would have taken most of a build night in aluminium."
-    ],
-    "images": []
-  },
-  {
-    "id": "2026-01-18-odometry-drift",
-    "date": "2026-01-18",
-    "topic": "Software",
-    "title": "Odometry drift turned out to be mechanical",
-    "summary": "Two days chasing a software bug that was a loose set screw.",
-    "placeholder": true,
-    "body": [
-      "Autonomous was ending up about 8cm short and slightly rotated, consistently in the same direction. Consistent error usually means a systematic problem, so we started in the code and spent two build nights there.",
-      "We rewrote the pose estimator, checked the wheel radius constant against a physical measurement, and logged encoder counts across twenty runs. Everything looked correct.",
-      "The dead wheel had a set screw backed out roughly a quarter turn. The encoder was reading a shaft that was slipping under load.",
-      "The lesson we actually took from this: when the software says the mechanism moved and the field says it did not, believe the field. We now check the hardware first when an error is consistent rather than random."
-    ],
-    "images": [
-      { "src": "files/log/2026-01-18-odometry-drift/01.svg", "caption": "Placeholder. Swap for a real photograph before launch." }
-    ]
-  },
-  {
-    "id": "2026-01-31-scouting-notes",
-    "date": "2026-01-31",
-    "topic": "Strategy",
-    "title": "What scouting the league tournament actually told us",
-    "summary": "Our scouting sheet was measuring the wrong things, and the alliance selection made that obvious.",
-    "placeholder": true,
-    "body": [
-      "We had been recording total score per match, which turns out to be close to useless for picking an alliance partner, because it says as much about the two other robots on the field as it does about the one you are watching.",
-      "What we needed was cycle time and failure rate. A team that scores steadily every match is worth more in a playoff than one that occasionally posts a very high number.",
-      "The sheet has been rebuilt around three things we can actually observe from the stands: cycles completed, seconds per cycle, and whether the robot stopped working at any point."
-    ],
-    "images": []
-  },
-  {
-    "id": "2026-02-14-intake-v3",
-    "date": "2026-02-14",
-    "topic": "Mechanical",
-    "title": "Intake v3, compliant wheels over surgical tubing",
-    "summary": "Third revision. Cycle time down roughly 0.6 seconds and far fewer jams.",
-    "placeholder": true,
-    "body": [
-      "Versions one and two both used surgical tubing on a hex shaft. It grips well when it is new and loses most of that within about two hours of driving, which meant retensioning between every match at the last meet.",
-      "Version three uses compliant wheels instead. They cost more and they are heavier, but they hold their grip across a full event, and the intake stopped needing attention between matches.",
-      "Measured across twenty cycles on the practice field, average intake time dropped from about 2.4 seconds to about 1.8. Jams went from roughly one in six cycles to one in thirty.",
-      "The tradeoff is width. The compliant wheels pushed the intake 20mm wider, which is fine under the sizing rules but leaves less room either side when approaching the depot at an angle. The drivers say it is manageable. We will find out at States."
-    ],
-    "images": [
-      { "src": "files/log/2026-02-14-intake-v3/01.svg", "caption": "Placeholder. Swap for a real photograph before launch." },
-      { "src": "files/log/2026-02-14-intake-v3/02.svg", "caption": "Placeholder. Swap for a real photograph before launch." }
-    ]
+    "thumb": { "src": "files/img/log/2026-09-03-curriculum-night-at-oshs/08.jpg" }
   }
 ]

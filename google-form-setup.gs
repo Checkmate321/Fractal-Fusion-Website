@@ -142,8 +142,8 @@ function onLogSubmit(e) {
     topic: answers['Topic'] || 'Misc',
     title: title,
     summary: answers['One sentence summary'] || '',
-    body: paragraphs(answers['What happened'] || ''),
-    images: []
+    author: answers['Your name'] || '',
+    body: paragraphs(answers['What happened'] || '')
   };
 
   var body = [
@@ -157,15 +157,23 @@ function onLogSubmit(e) {
   ];
 
   if (files.length) {
-    body.push('Photos to download, rename 01, 02, and put in files/log/' + id + '/');
-    body.push('Then add one { "src": ..., "caption": "" } per photo to images.');
+    body.push('Photos to download, rename 01, 02, and put in files/img/log/' + id + '/');
+    body.push('');
+    body.push('Then put each one into body, at the point in the text it belongs to:');
+    body.push('');
+    body.push('  { "figure": "files/img/log/' + id + '/01.jpg",');
+    body.push('    "alt": "what the picture shows",');
+    body.push('    "caption": "what it does not show" }');
+    body.push('');
+    body.push('and add "thumb": { "src": "files/img/log/' + id + '/01.jpg" } for the card,');
+    body.push('using whichever picture is most recognisable at card size.');
     body.push('');
     body.push(files.join('\n'));
   } else if (answers['Photo links']) {
     body.push('Photo links given:');
     body.push(answers['Photo links']);
   } else {
-    body.push('No photos on this one, so images stays [].');
+    body.push('No photos on this one, so the entry goes in exactly as above.');
   }
 
   MailApp.sendEmail({
