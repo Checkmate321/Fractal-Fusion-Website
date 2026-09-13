@@ -56,6 +56,31 @@ JSON strings cannot contain line breaks. If body were one long string you would
 have to type `\n\n` between paragraphs and get it right every time. A list means
 you paste one paragraph per line and the page handles the spacing.
 
+### Linking to something mid sentence
+
+A paragraph is plain text. HTML typed into one comes out as the characters you
+typed, on purpose, so an entry can say `<script>` without anything happening.
+The one exception is a link, written the way it is written in Markdown:
+
+```
+"[Here](biobuzz-calculator.html) is a calculator for the chances of each scenario."
+```
+
+The words in the square brackets become the link, the address in the round
+brackets is where it goes. Use a relative path for our own pages
+(`biobuzz-calculator.html`, not a full address), which is how every other link
+on the site is written. Outside links get a new tab on their own.
+
+Two things it will not do:
+
+- **Addresses containing brackets do not work.** Some Wikipedia URLs are like
+  this. Put the address in as a picture caption or leave it as plain text.
+- **Only `http`, `https` and `mailto` addresses link.** Anything else keeps its
+  words and quietly loses its link, because the body is a box a stranger can
+  type into through the form.
+
+Links only work in body paragraphs, not in the summary or a caption.
+
 ---
 
 ## Photos

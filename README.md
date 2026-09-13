@@ -1,4 +1,4 @@
-# Fractal Fusion, fractalfusion.team
+# Fractal Fusion, fractalfusion.tech
 
 Website for <em>FIRST</em> Tech Challenge team 27188, Orlando Science High School.
 
@@ -28,6 +28,7 @@ Then open <http://localhost:8000>.
 index.html  log.html  entry.html          the pages
 resources.html  sponsors.html
 partners.html  about.html  404.html
+biobuzz-calculator.html                   reached from a card on resources.html
 add-log.html                              unlisted, team only
 sitemap.xml  robots.txt
 
@@ -161,6 +162,21 @@ GLB cannot be taken apart or measured the way the assemblies can.
 An entry can still be a file: set `"download": true` and point `href` at it.
 `.gitattributes` marks `.glb` as binary so line ending normalisation can never
 corrupt one.
+
+### BioBuzz calculator
+
+`biobuzz-calculator.html` is a resource like any other: it is reached from a card in
+`data/resources.json`, not from the nav, and its `data-page` says `resources`
+so the nav stays lit on the page it hangs off.
+
+Two boxes in, five rows out. Four are drawn at once and none go back, so each
+split is a hypergeometric term, `C(pollen, p) * C(nectar, n) / C(pollen +
+nectar, 4)`. The denominator is never worked out on its own: the five
+numerators sum to it exactly, so the code divides each by their total instead,
+which skips the one factorial large enough to lose precision.
+
+The figures were checked against the spreadsheet the page replaces, all six
+rows of it, to the last decimal place shown.
 
 ## The robot in the hero
 
@@ -313,6 +329,16 @@ See [ADDING-A-LOG-ENTRY.md](ADDING-A-LOG-ENTRY.md). One object appended to
 `data/log.json` produces a card, an entry page and a filter count. No HTML is
 ever edited.
 
+Body paragraphs are escaped before they are rendered, so HTML typed into one
+comes out as characters. The single exception is a Markdown link,
+`[words](href)`, handled by `inlineLinks()` next to `esc()` in `main.js`. The
+href is checked against a list of schemes rather than escaped and trusted:
+relative, `http`, `https` and `mailto` link, and anything else keeps its words
+and loses its anchor. That check is there because the body can arrive through
+the form intake in [GOOGLE-FORM.md](GOOGLE-FORM.md), which makes it a box a
+stranger can type into, and `javascript:` is a scheme like any other to an href
+that has only been escaped.
+
 ---
 
 ## Before this goes live
@@ -357,7 +383,7 @@ All eight chunks are done.
 
 Static files, no build step. Point Cloudflare Pages (or Netlify, or GitHub Pages)
 at the repo with **no build command** and the root as the output directory, then
-attach `fractalfusion.team`.
+attach `fractalfusion.tech`.
 
 Two things to set on the host:
 
@@ -375,6 +401,53 @@ a project URL: the header fetch 404s and the page renders with no header at all.
 Every page sits at the top level, so relative paths on `404.html` resolve
 correctly too. Keep it that way, or the 404 page will lose its styling.
 
-The `og:url` tags, `sitemap.xml` and `robots.txt` still name
-`https://fractalfusion.team/`, which is not yet attached. Update them, and add a
-`CNAME` file, when the domain's DNS points at the host.
+The domain is **fractalfusion.tech**, attached and serving from GitHub Pages.
+`www` redirects to the apex. The `og:url` tags, `sitemap.xml` and `robots.txt`
+all name it, and a `CNAME` file at the root holds it, so the domain survives a
+deploy even if the Pages setting is ever cleared.
+
+If the domain ever changes again, four things name it: the `CNAME` file, the
+`og:url` tag on every page, `sitemap.xml`, and `COUNTER_SITES` in `main.js`.
+Miss the last one and the site goes on working while the view count silently
+stops.
+
+
+## The view count in the footer
+
+The number at the foot of every page is real. It comes from
+[GoatCounter](https://www.goatcounter.com), a free, cookieless counter, and it
+counts pageviews on the domain you are reading it on.
+
+The account is `fractalfusion`, the dashboard is at
+`https://fractalfusion.goatcounter.com`, and the login belongs to the team, not
+to a person. Whoever leads next season needs it, so it lives wherever the team
+keeps shared credentials.
+
+Everything lives in the **VIEW COUNT** section of `main.js`:
+
+* `COUNTER_SITES` maps a domain to a GoatCounter site code. A page looks up the
+  domain it is being served from and reports to that site. **A domain that is
+  not in this list is not counted and shows no number**, which is what keeps
+  localhost and previews out of the figures.
+
+### Adding another domain
+
+1. Add a site in GoatCounter, which gives you a new code.
+2. In that site's settings, turn on **allow using the visitor counter**. Without
+   it the count endpoint returns 403 and the footer number stays hidden.
+3. Add one line to `COUNTER_SITES`: the hostname, and the code.
+
+Point two domains at the same code to count them together; give them separate
+codes to count them apart.
+
+### If the number disappears
+
+It is meant to. The element is hidden until a number arrives, so a blocked
+request, an unlisted domain, or a counter that is switched off all leave the
+footer reading exactly as it did before. Check, in this order: the domain is in
+`COUNTER_SITES`, the visitor counter setting is on, and an ad blocker is not
+eating `gc.zgo.at`.
+
+Roughly 10 to 30 percent of visits are invisible to any counter that runs in the
+browser, ad blockers being the reason. The real number is always a little higher
+than the one on the page.

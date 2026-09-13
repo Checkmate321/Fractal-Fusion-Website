@@ -1,5 +1,12 @@
 [
   {
+    "id": "biobuzz-calculator",
+    "title": "BioBuzz Combination Distributions",
+    "summary": "A custom calculator that finds the likelihood of getting different combinations of pollen and nectar.",
+    "href": "biobuzz-calculator.html",
+    "meta": "Open the calculator"
+  },
+  {
     "id": "cad-onshape",
     "title": "25-26 Worlds CAD",
     "summary": "Sierah, the robot we took to the Ross Division at the FIRST World Championship.",

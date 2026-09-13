@@ -22,6 +22,45 @@
       { "figure": "files/img/log/2026-09-03-curriculum-night-at-oshs/04.jpg"},
       { "figure": "files/img/log/2026-09-03-curriculum-night-at-oshs/03.jpg" }
     ],
-    "thumb": { "src": "files/img/log/2026-09-03-curriculum-night-at-oshs/08.jpg" }
+    "thumb": { "src": "files/img/log/2026-09-03-curriculum-night-at-oshs/07.jpg" }
+  },
+  {
+    "id": "2026-09-12-biobuzz-kickoff",
+    "date": "2026-09-12",
+    "topic": "Strategy",
+    "title": "BioBuzz Kickoff!!",
+    "summary": "Watching the release of the new FTC game this year and prototyping design plans.",
+    "author": "Nathan L",
+    "body": [
+      "Our school hosted a kickoff this year, like we do every year. The day started off with workshops for primarily the new members in our program, but they are useful for everyone. After the series of workshops, we watched the official game reveal... The game this year is crazy, but that's how it always feels like at the beginning of the season.",
+      { "figure": "files/img/log/2026-09-12-biobuzz-kickoff/01.jpg",
+        "alt": "Two members at a computer in the shop during a workshop, a field element panel in front of them",
+        "caption": "Workshops in the morning, game reveal after." },
+      "After the game reveal, we split up into subteams to make a better use of our time. It is very important to understand the game, so before prototyping, we got some people to read the whole manual. Then, we discussed priorities and realized that at the start of the game, there is a 98% chance we would either collect 4 pollen or 3 pollen and 1 nectar. [Here](biobuzz-calculator.html) is a calculator for the chances of each scenario for BioBuzz.",
+      { "figure": "files/img/log/2026-09-12-biobuzz-kickoff/03.jpg",
+        "alt": "Members talking across a desk in a classroom, one holding a yellow game ball",
+        "caption": "Subteams split up right after the reveal." },
+      { "figures": [
+          { "src": "files/img/log/2026-09-12-biobuzz-kickoff/04.jpg",
+            "alt": "Members sitting on desks reading the game manual on laptops",
+            "caption": "Reading the manual end to end." },
+          { "src": "files/img/log/2026-09-12-biobuzz-kickoff/06.jpg",
+            "alt": "Two members bent over a sheet of paper working through numbers with a pen",
+            "caption": "Working out the starting odds on paper." }
+        ] },
+      "Then, we discussed possible designs and made a gantt chart. This gives us a plan to follow as we start off the season!",
+      { "figures": [
+          { "src": "files/img/log/2026-09-12-biobuzz-kickoff/02.jpg",
+            "alt": "A circle of team members standing and talking through design ideas",
+            "caption": "Talking designs before anything got drawn." },
+          { "src": "files/img/log/2026-09-12-biobuzz-kickoff/07.jpg",
+            "alt": "A member sketching a mechanism on lined paper beside an open laptop",
+            "caption": "And then drawing them." }
+        ] },
+      { "figure": "files/img/log/2026-09-12-biobuzz-kickoff/05.jpg",
+        "alt": "The team posed together in the school lobby in matching light blue hoodies",
+        "caption": "Day one of the season." }
+    ],
+    "thumb": { "src": "files/img/log/2026-09-12-biobuzz-kickoff/02.jpg" }
   }
-]
+] 

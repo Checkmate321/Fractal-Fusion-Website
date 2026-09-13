@@ -253,6 +253,17 @@ html{ -webkit-tap-highlight-color:transparent }
 
 .rule{ height:8px; width:clamp(72px, 9vw, 112px); background:var(--c1); border-radius:1px; margin-top:var(--s2) }
 
+/* Read but not seen. For a column heading that a sighted reader gets from the
+   shape of the column itself, where display:none would take it away from
+   everyone. */
+.vh{
+  position:absolute;
+  width:1px; height:1px;
+  overflow:hidden;
+  clip-path:inset(50%);
+  white-space:nowrap;
+}
+
 
 /* ==========================================================================
    BANDS. Every section is either light or dark. Nothing in between.
@@ -531,6 +542,11 @@ a.card:active{ transform:translateY(0) }
   letter-spacing:.09em; text-transform:uppercase; color:var(--mute);
 }
 .foot-legal > *{ white-space:nowrap }
+
+/* The view count. Same mono strip as the copyright beside it, a shade quieter:
+   it is the least important thing on the line, and it is a number nobody came
+   for. [hidden] is doing real work here, so nothing overrides it. */
+.foot-views{ color:var(--mute) }
 
 /* Brand marks, not words. Every link is a --hit box, finger sized, holding a
    quiet --mark glyph. Each one paints its mark as a mask filled with
@@ -924,7 +940,7 @@ a.card:active{ transform:translateY(0) }
    wide figure break out of the column of text while the text itself stays
    readable. */
 .entry-body{ font-size:var(--t-lede); line-height:1.68 }
-.entry-body > p{ margin-bottom:var(--s3); max-width:var(--wrap-text) }
+.entry-body > p{ margin-bottom:var(--s3); max-width:var(--read-w) }
 
 /* Pictures are capped by HEIGHT, not width, and this is the reason: the photos
    come off phones, so they are portrait, and a 3:4 photograph at the width of
@@ -942,9 +958,34 @@ a.card:active{ transform:translateY(0) }
      terms, not as a percentage: a figure shrinks to fit its picture, and a
      percentage measured against a box that is itself measured from its contents
      resolves to nothing, which is how a phone photo ends up wider than the
-     phone. Mirrors the gutters .wrap sets. */
-  --band-w:calc(100vw - 2 * clamp(1rem, 4vw, 2rem));
-  --figure-w:min(var(--wrap-text), var(--band-w));
+     phone. Mirrors what .wrap actually leaves: it is capped at --wrap and that
+     cap is on the border box, so the gutters come off the inside of it. Take
+     the gutters off only the viewport and every width here is 64px optimistic,
+     which is enough to push a pair of pictures onto separate lines on a screen
+     with room for both. */
+  --band-w:calc(min(100vw, var(--wrap)) - 2 * clamp(1rem, 4vw, 2rem));
+
+  /* A measure of its own, wider than --wrap-text and fluid rather than fixed.
+     --wrap-text is the site's prose cap and it is shared by every .measure on
+     every page, so it cannot be opened up here without opening up all of them.
+     An entry is the one thing on the site read end to end rather than scanned,
+     and at 68ch on a wide screen it was a column down the left of an otherwise
+     empty band.
+
+     The floor is --wrap-text, so nothing is ever narrower than it was. The vw
+     term is what does the work between a laptop and a desktop, and the 80ch
+     ceiling is where a line stops being a line anyone tracks back from. On a
+     screen too narrow for the floor the band's own padding wins anyway, so the
+     bottom of the clamp never costs a phone anything.
+
+     64vw is picked so the middle term overtakes the floor at almost exactly
+     the width where the band stops growing. Lower than that and there is a
+     stretch of laptop widths where the band has already opened up and the text
+     is still sitting at its old measure, which reads as the rule not working
+     rather than as a decision. */
+  --read-w:clamp(var(--wrap-text), 64vw, 80ch);
+
+  --figure-w:min(var(--read-w), var(--band-w));
 }
 
 /* Figures sit in the run of text, so they need air above and below, not just
@@ -966,7 +1007,7 @@ a.card:active{ transform:translateY(0) }
 /* One per entry, at most. The break in rhythm is the whole point of it, and
    it stops being a break if everything does it. Screenshots and CAD live
    here, being unreadable at the width of the text. */
-.entry-figure--wide{ --figure-w:min(var(--wrap), var(--band-w)) }
+.entry-figure--wide{ --figure-w:var(--band-w) }
 
 /* Two pictures of one thing, side by side. The shared height cap is what makes
    the row read as a row: both come out the same height whatever their shapes,
@@ -979,8 +1020,9 @@ a.card:active{ transform:translateY(0) }
   gap:var(--s3);
   margin:var(--s5) 0;
   --figure-h:min(56vh, 520px);
-  /* Two of them share the band between them, less the gap. */
-  --figure-w:calc((min(var(--wrap), var(--band-w)) - var(--s3)) / 2);
+  /* Two of them share the band between them, less the gap. --band-w is already
+     the space inside the gutters, so this is what a pair can really have. */
+  --figure-w:calc((var(--band-w) - var(--s3)) / 2);
 }
 .entry-figures .entry-figure{ margin:0; flex:0 1 auto; min-width:0 }
 
@@ -1232,7 +1274,11 @@ a.sponsor-tile img{ transition:transform .25s ease }
    FORMS
    ========================================================================== */
 
-.form{ display:grid; gap:var(--s3) }
+/* One column that is allowed to be narrower than its contents. Without the
+   minmax(0,...) the implicit track sizes to the widest item, so the JSON
+   preview would set the form's width and push the page sideways instead of
+   scrolling inside its own box. */
+.form{ display:grid; grid-template-columns:minmax(0,1fr); gap:var(--s3) }
 .field{ display:grid; gap:.45rem }
 .field label{
   font-family:var(--mono); font-size:var(--t-label); font-weight:600;
@@ -1488,6 +1534,8 @@ a.res-card:active{ transform:translateY(0); border-color:currentColor }
 .mt{ margin-top:var(--s4) }
 
 .json-out{
+  min-width:0;
+  max-width:100%;
   border:1px solid var(--hair);
   border-radius:var(--radius);
   padding:var(--s3);
@@ -1503,6 +1551,7 @@ a.res-card:active{ transform:translateY(0); border-color:currentColor }
    the page. */
 .json-body{
   margin:0;
+  max-width:100%;
   overflow-x:auto;
   font-family:var(--mono);
   font-size:var(--t-small);
@@ -1527,8 +1576,22 @@ a.res-card:active{ transform:translateY(0); border-color:currentColor }
   margin-left:.1em;
 }
 
-.benefit-grid{ margin-top:var(--s4) }
-.benefit-grid h3{ margin-bottom:var(--s2) }
+/* The benefit cards are the partnership routes in another suit: same dark
+   band, same hairline cards, same butter tag over an uppercase head. Six solid
+   light slabs on navy were a wall, and the two pages now open the same way,
+   which is the point when a sponsor and a partner are often the same person
+   reading both. The spacing under the head comes from .routes-intro, shared
+   with partners so the two cannot drift apart. */
+.benefit{
+  display:flex; flex-direction:column; align-items:start;
+  gap:var(--s2);
+}
+.benefit-num{ color:var(--c1) }
+.benefit h3{
+  margin:0;
+  font-size:var(--t-h3); font-stretch:118%; text-transform:uppercase;
+}
+.benefit p{ margin:0 }
 
 .contact-dl{
   margin:var(--s4) 0 0;
@@ -1554,6 +1617,109 @@ a.res-card:active{ transform:translateY(0); border-color:currentColor }
   font-family:var(--mono);
   font-size:var(--t-small);
   color:var(--mute);
+}
+
+
+/* ==========================================================================
+   BIOBUZZ CALCULATOR
+   Two number boxes and a five row table. The table borrows .rec, which was
+   built for the season record and therefore assumes a dark band: it puts
+   butter on the last column, and butter is 1.07:1 on periwinkle. This one
+   sits on a light band, so that colour is handed back and the accent arrives
+   as the bar instead, which is a shape and legal either way.
+   ========================================================================== */
+
+.bb-form{
+  display:grid; gap:var(--s3) var(--s4);
+  grid-template-columns:repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  max-width:var(--wrap-text);
+}
+
+.bb-out{ margin-top:var(--s5) }
+
+/* The one figure worth reading from across a pit. Navy on the light band, so
+   the stat inside it comes out butter on its own. */
+.bb-lead{
+  display:grid; gap:var(--s1); justify-items:start;
+  padding:var(--s3) var(--s4);
+  max-width:22rem;
+}
+.bb-lead-case{ margin:0; font-size:var(--t-small); color:var(--mute) }
+
+/* Still capped, because a bar the full width of a desktop band is a stripe
+   rather than a length anyone compares, but the cap was tighter than it needed
+   to be: at 46rem the table sat well inside a band the rest of the page fills,
+   and the bar is the column that gains from the room. The floor is what the
+   three columns need before the percentage starts running under the bar beside
+   it: under this the table scrolls inside .tablewrap and the page stays put. */
+.bb-table{ min-width:30rem; max-width:58rem }
+
+/* A caption is not a block. .label carries display:block, which takes it out
+   of the caption slot and drops it under the header row, so the mono is set
+   here instead and the caption stays where a caption goes. */
+.bb-table caption{
+  caption-side:top; text-align:left; padding-bottom:var(--s2);
+  font-family:var(--mono); font-size:var(--t-label); font-weight:600;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--mute);
+}
+
+.bb-table :is(th,td):nth-child(1){ width:38% }
+.bb-table :is(th,td):nth-child(2){ width:22% }
+.bb-table :is(th,td):nth-child(3){ width:auto }
+
+/* .rec clears the last row's rule on td only, which leaves the row heading
+   carrying half a line the rest of the row has given up. */
+.bb-table tr:last-child :is(th,td){ border-bottom:0 }
+
+/* A row heading, not a column heading. It is the name of the case and reads
+   as body text, so it gives back the mono the column headings keep. */
+.bb-table tbody th{
+  font-family:var(--font); font-size:var(--t-body); font-weight:600;
+  letter-spacing:0; text-transform:none; color:inherit;
+  vertical-align:middle;
+}
+.bb-table td{ vertical-align:middle }
+.bb-table td:last-child{ color:inherit }
+
+/* The likeliest case. Weight and width carry it, never colour alone. */
+.bb-table tr.is-top th{ font-weight:800; font-stretch:114% }
+.bb-table tr.is-top td.n{ font-weight:600 }
+
+/* The full track is the hairline, the fill is butter. --fill is set inline
+   per row, which is the one thing about a bar that cannot live in a
+   stylesheet. */
+.bb-bar{
+  display:block;
+  height:10px;
+  border-radius:1px;
+  background:var(--hair);
+  position:relative;
+  overflow:hidden;
+}
+.bb-bar::before{
+  content:"";
+  position:absolute; inset:0 auto 0 0;
+  width:var(--fill, 0%);
+  min-width:1px;
+  background:var(--c1);
+}
+
+.bb-note{ margin-top:var(--s3); color:var(--mute) }
+
+/* The formula, set apart from the prose around it. Butter as type, which is
+   only legal because this block sits on navy. It wraps rather than holding
+   one line: the measure it sits in is narrower than the formula is long, and
+   a line that runs past the edge is worse than one that breaks. */
+.bb-formula{
+  margin-top:var(--s3);
+  padding:var(--s2) var(--s3);
+  border-left:2px solid var(--c1);
+}
+.bb-formula code{
+  font-family:var(--mono);
+  font-size:var(--t-small);
+  line-height:1.7;
+  color:var(--c1);
 }
 
 

@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /add-log.html
 
-Sitemap: https://fractalfusion.team/sitemap.xml
+Sitemap: https://fractalfusion.tech/sitemap.xml

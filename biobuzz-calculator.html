@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>BioBuzz Combination Distributions | Fractal Fusion, FTC 27188</title>
+<meta name="description" content="A calculator that finds the likelihood of drawing each combination of pollen and nectar in BioBuzz.">
+
+<link rel="icon" href="files/logos/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="BioBuzz Combination Distributions | Fractal Fusion, FTC 27188">
+<meta property="og:description" content="A calculator that finds the likelihood of drawing each combination of pollen and nectar in BioBuzz.">
+<meta property="og:url" content="https://fractalfusion.tech/biobuzz-calculator.html">
+<meta property="og:image" content="https://fractalfusion.tech/files/logos/ffLogo-512.png">
+</head>
+
+<!-- Resources is the page this one hangs off, so the nav stays lit on it
+     rather than going dark on a page that has no entry of its own. -->
+<body data-page="resources">
+
+<div id="header"></div>
+
+<main>
+
+  <section class="page-head">
+    <div class="wrap">
+      <span class="label">Resources</span>
+      <h1>BioBuzz Combination Distributions</h1>
+      <div class="rule"></div>
+      <p class="lede">A custom calculator that finds the likelihood of getting
+         different combinations of pollen and nectar.</p>
+    </div>
+  </section>
+
+  <section class="band band--light">
+    <div class="wrap">
+
+      <!-- Two numbers in, a table out. The form never submits anywhere: the
+           figures are recalculated on every keystroke, so a submit button
+           would only be a second way to do what typing already did. -->
+      <form class="bb-form" id="bb-form" novalidate>
+        <div class="field">
+          <label for="bb-nectar">Nectar available</label>
+          <input id="bb-nectar" name="nectar" type="number"
+                 inputmode="numeric" min="0" max="999" step="1" value="8">
+          <span class="hint">How many nectar are left to be drawn from.</span>
+        </div>
+
+        <div class="field">
+          <label for="bb-pollen">Pollen available</label>
+          <input id="bb-pollen" name="pollen" type="number"
+                 inputmode="numeric" min="0" max="999" step="1" value="40">
+          <span class="hint">How many pollen are left to be drawn from.</span>
+        </div>
+      </form>
+
+      <div id="bb-out" class="bb-out" aria-live="polite">
+        <div class="todo">Loading&hellip;</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="band band--dark band--tight">
+    <div class="wrap">
+      <div class="measure">
+        <h2>How the number is worked out</h2>
+        <div class="rule"></div>
+        <p class="bb-note">Four are drawn at once and none go back, so this is a
+           hypergeometric draw rather than four separate coin flips. The chance of
+           landing on a given split is the number of ways to pick that split,
+           divided by the number of ways to pick any four at all.</p>
+
+        <p class="bb-formula"><code>P(p pollen, n nectar) = C(pollen, p) &times; C(nectar, n) &divide; C(pollen + nectar, 4)</code></p>
+
+        <p class="bb-note">Because nothing is put back, the odds are not fixed. As
+           pollen is drawn out of the pool the remaining draws tilt toward nectar,
+           which is why the table is worth rechecking during a match rather than
+           memorising once.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="footer"></div>
+
+<script src="main.js"></script>
+</body>
+</html>

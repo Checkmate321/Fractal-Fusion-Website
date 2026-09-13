@@ -9,7 +9,7 @@ There are two ways to run the form. **Use the first one.**
 
 ## Option A, the page on our own site (recommended)
 
-<https://fractalfusion.team/add-log.html>
+<https://fractalfusion.tech/add-log.html>
 
 No Google account, no sign in, no permissions prompt, nothing to install. It is
 not linked from the nav, it is marked `noindex, nofollow`, it is excluded from

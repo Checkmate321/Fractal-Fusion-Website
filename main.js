@@ -43,6 +43,7 @@
    SPONSOR STRIP       the scrolling logo marquee on the home page
    SEASON COUNTDOWN    the countdown to the next date on the calendar
    EXTERNAL LINKS      opens off site links in a new tab, adds rel safety
+   VIEW COUNT          GoatCounter, one site per domain, the footer number
    HELPERS             escaping, date formatting, loading the log
    LOG FIGURES         pictures inside an entry, and the card thumbnail
    LOG INDEX           the card grid and topic filters
@@ -50,6 +51,7 @@
    HOME                the latest three entries
    SPONSORS            the detailed sponsor list
    RESOURCES           downloads, with pending items shown but not clickable
+   BIOBUZZ CALCULATOR  the draw odds table on biobuzz-calculator.html
    FORMS               submissions to Web3Forms, without leaving the page
    ADD LOG             composes a submission into ready to paste JSON
    HERO ROBOT          the 3D model on the home page
@@ -313,12 +315,92 @@ function markExternalLinks(root) {
 
 markExternalLinks();
 
+
+/* --------------------------------------------------------------------------
+   VIEW COUNT
+
+   GoatCounter, which counts a pageview and will also hand the number back to
+   the page. That second half is the whole reason it is this and not one of
+   the analytics tools that only fill a dashboard.
+
+   One GoatCounter site per domain, listed below. The page reads the domain it
+   is being served from and reports to that domain's site, so the same files
+   can sit on all of them and each still gets its own count and its own
+   dashboard. A domain that is not in this list is not counted and shows no
+   number, which is what keeps localhost and preview builds out of the figures.
+
+   Nothing here is a secret. The site code sits in the page source by design;
+   it is a write-only address for pageviews.
+   -------------------------------------------------------------------------- */
+
+var COUNTER_SITES = {
+  'fractalfusion.tech'     : 'fractalfusion',
+  'www.fractalfusion.tech' : 'fractalfusion',
+
+  /* The GitHub Pages address the domain sits in front of. Anyone reaching the
+     site that way is the same audience, so it reports to the same site and the
+     count is one number rather than two halves. Give it a code of its own only
+     if you ever want the two counted apart. */
+  'checkmate321.github.io' : 'fractalfusion'
+};
+
+function counterSite() {
+  return COUNTER_SITES[location.hostname] || '';
+}
+
+/* The script is added here rather than written into eleven <head>s: every page
+   already loads this file, so there is one place to change and no page can be
+   missed or given the wrong code. async, so it never delays the render. */
+function countThisView() {
+  var site = counterSite();
+  if (!site) return;
+
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = '//gc.zgo.at/count.js';
+  s.setAttribute('data-goatcounter', 'https://' + site + '.goatcounter.com/count');
+  document.head.appendChild(s);
+}
+
+/* Fills the footer figure. Everything about this fails quietly: an unlisted
+   domain, a blocked request, a counter that is switched off, a shape we did
+   not expect. The element stays hidden and the footer reads exactly as it did
+   before. A broken counter at the foot of every page is worse than none. */
+function showViewCount(scope) {
+  var el   = (scope || document).querySelector('.foot-views');
+  var site = counterSite();
+  if (!el || !site) return;
+
+  fetch('https://' + site + '.goatcounter.com/counter/TOTAL.json')
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+    .then(function (d) {
+      /* count is pageviews, count_unique is people. The label says views, so
+         it is the first one. It arrives already grouped, like 1,204.
+
+         A zero is treated as nothing to say. A new counter reads 0 until the
+         first visit lands, and "0 views" in the footer of a page somebody is
+         looking at right now reads as broken rather than as new. */
+      var n = d && d.count;
+      if (n === undefined || n === null || n === '') return;
+      if (Number(String(n).replace(/,/g, '')) === 0) return;
+
+      el.textContent = n + ' views';
+      el.hidden = false;
+    })
+    .catch(function () { /* stays hidden */ });
+}
+
+countThisView();
+
+
 include('header', 'header.html').then(function () {
   markActiveNav();
   markExternalLinks(document.getElementById('header'));
 });
 include('footer', 'footer.html').then(function () {
-  markExternalLinks(document.getElementById('footer'));
+  var foot = document.getElementById('footer');
+  markExternalLinks(foot);
+  showViewCount(foot);
 });
 
 
@@ -336,6 +418,38 @@ function esc(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* A body paragraph is escaped before anything else touches it, so the one
+   piece of markup an entry is allowed to carry has to be put back afterwards.
+   [text](href) is the whole of it: enough to name a page mid sentence, small
+   enough that nobody writing an entry has to think about HTML, and nothing
+   else gets through.
+
+   The href is checked against a list of schemes rather than escaped and
+   trusted. Entries can arrive through the form intake described in
+   GOOGLE-FORM.md, which makes the body a box a stranger can type into, and to
+   an href that has merely been escaped "javascript:" is a scheme like any
+   other. Relative paths, http, https and mailto. A link that fails the check
+   keeps its words and loses its anchor, because a paragraph missing a link
+   still reads and a paragraph missing a clause does not. */
+var LINK_SYNTAX = /\[([^\]\n]+)\]\(([^()\s]+)\)/g;
+
+function safeHref(href) {
+  var scheme = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(href);
+  if (!scheme) return true;                 /* relative, which is the house style */
+  var s = scheme[1].toLowerCase();
+  return s === 'http' || s === 'https' || s === 'mailto';
+}
+
+/* Takes escaped text and gives back escaped text with anchors in it. Both
+   halves of the match came out of esc() with the rest of the paragraph, so
+   neither needs escaping again here. */
+function inlineLinks(escaped) {
+  return escaped.replace(LINK_SYNTAX, function (whole, text, href) {
+    if (!safeHref(href)) return text;
+    return '<a class="lnk" href="' + href + '">' + text + '</a>';
+  });
 }
 
 /* The date string is split by hand. new Date('2026-02-14') is read as UTC
@@ -480,7 +594,7 @@ function entryBodyHTML(body) {
   (body || []).forEach(function (block) {
     if (typeof block === 'string') {
       flush();
-      out.push('<p>' + esc(block) + '</p>');
+      out.push('<p>' + inlineLinks(esc(block)) + '</p>');
       return;
     }
     if (!block || typeof block !== 'object') return;
@@ -644,10 +758,16 @@ function renderEntry(entries) {
   var body = entryBodyHTML(e.body);
 
   /* Entries written before pictures could sit inside the body keep theirs in
-     a top level images list. Those still render, after the text, as they did. */
-  var figures = (e.images || []).map(function (img) {
-    return figureHTML(img, '');
-  }).join('');
+     a top level images list. Those still render after the text, and they go
+     through the same walk the body does, so a run of them pairs up across the
+     band exactly like pictures written inline rather than stacking one per
+     line down a column half the page wide. */
+  var figures = entryBodyHTML((e.images || []).map(function (img) {
+    return {
+      figure: img.src, alt: img.alt, caption: img.caption,
+      width: img.width, height: img.height
+    };
+  }));
 
   var nav = '';
   if (newer || older) {
@@ -788,6 +908,141 @@ function renderResources() {
 
 renderResources();
 
+
+/* --------------------------------------------------------------------------
+   BIOBUZZ CALCULATOR
+   -------------------------------------------------------------------------- */
+
+/* Four are drawn at once and none go back, so each split is a hypergeometric
+   term: C(pollen, p) * C(nectar, n) over C(pollen + nectar, 4).
+
+   The denominator is never worked out on its own. The five numerators sum to
+   it exactly, so dividing each by their total gives the same answer and skips
+   a factorial that would be the first thing to overflow. */
+var BB_DRAW = 4;
+
+/* Only ever called with k of 4 or less, so the loop is four multiplications
+   and the running value stays well inside what a double holds exactly. */
+function choose(n, k) {
+  if (k < 0 || k > n) return 0;
+  var out = 1;
+  for (var i = 0; i < k; i++) out = out * (n - i) / (i + 1);
+  return out;
+}
+
+/* Reads the two boxes. Blank counts as zero, anything else is floored into
+   range, so a half typed number never renders NaN across the table. */
+function bbInputs() {
+  function num(id) {
+    var el = document.getElementById(id);
+    var v = Math.floor(Number(el ? el.value : 0));
+    if (!isFinite(v) || v < 0) return 0;
+    return Math.min(v, 999);
+  }
+  return { nectar: num('bb-nectar'), pollen: num('bb-pollen') };
+}
+
+/* One row per split, from all pollen down to all nectar, which is the order
+   the spreadsheet this replaces used. */
+function bbRows(pollen, nectar) {
+  var rows = [];
+  var total = 0;
+  var i;
+
+  for (i = BB_DRAW; i >= 0; i--) {
+    var ways = choose(pollen, i) * choose(nectar, BB_DRAW - i);
+    rows.push({ pollen: i, nectar: BB_DRAW - i, ways: ways });
+    total += ways;
+  }
+
+  for (i = 0; i < rows.length; i++) {
+    rows[i].p = total ? rows[i].ways / total : 0;
+  }
+  return rows;
+}
+
+/* "4 pollen" rather than "4 pollen, 0 nectar". The zero half of a split is
+   noise on the row that is already saying everything. */
+function bbCaseLabel(row) {
+  var parts = [];
+  if (row.pollen) parts.push(row.pollen + ' pollen');
+  if (row.nectar) parts.push(row.nectar + ' nectar');
+  return parts.join(', ');
+}
+
+/* Two decimals, matching the sheet. Anything that rounds to zero but is not
+   zero says so, because "0.00%" and "cannot happen" are different answers. */
+function bbPercent(p) {
+  if (p > 0 && p < 0.00005) return '<0.01%';
+  return (p * 100).toFixed(2) + '%';
+}
+
+function bbRowHTML(row, likeliest) {
+  var pct = row.p * 100;
+  return '<tr' + (row === likeliest ? ' class="is-top"' : '') + '>' +
+    '<th scope="row">' + esc(bbCaseLabel(row)) + '</th>' +
+    '<td class="n">' + bbPercent(row.p) + '</td>' +
+    '<td class="bb-barcell">' +
+      '<span class="bb-bar" style="--fill:' + pct.toFixed(3) + '%"></span>' +
+    '</td>' +
+  '</tr>';
+}
+
+function renderBioBuzz() {
+  var host = document.getElementById('bb-out');
+  if (!host) return;
+
+  var input = bbInputs();
+  var pool  = input.pollen + input.nectar;
+
+  /* Fewer than four in the pool and there is no draw to describe. Saying so
+     beats a table of zeroes that looks like a broken calculator. */
+  if (pool < BB_DRAW) {
+    host.innerHTML = '<div class="todo">Only ' + pool +
+      ' in the pool. There have to be four available before a draw has any odds at all.</div>';
+    return;
+  }
+
+  var rows = bbRows(input.pollen, input.nectar);
+
+  var likeliest = rows[0];
+  for (var i = 1; i < rows.length; i++) {
+    if (rows[i].p > likeliest.p) likeliest = rows[i];
+  }
+
+  host.innerHTML =
+    '<div class="card card--dark bb-lead">' +
+      '<span class="label">Most likely draw</span>' +
+      '<span class="stat">' + bbPercent(likeliest.p) + '</span>' +
+      '<p class="bb-lead-case">' + esc(bbCaseLabel(likeliest)) + '</p>' +
+    '</div>' +
+    '<div class="tablewrap">' +
+      '<table class="rec bb-table">' +
+        '<caption>Drawing four from ' + input.pollen +
+          ' pollen and ' + input.nectar + ' nectar</caption>' +
+        '<thead><tr>' +
+          '<th scope="col">Combination</th>' +
+          '<th scope="col">Chance</th>' +
+          '<th scope="col"><span class="vh">Relative likelihood</span></th>' +
+        '</tr></thead>' +
+        '<tbody>' +
+          rows.map(function (r) { return bbRowHTML(r, likeliest); }).join('') +
+        '</tbody>' +
+      '</table>' +
+    '</div>';
+}
+
+function initBioBuzz() {
+  var form = document.getElementById('bb-form');
+  if (!form) return;
+
+  form.addEventListener('input', renderBioBuzz);
+  form.addEventListener('submit', function (ev) { ev.preventDefault(); });
+
+  renderBioBuzz();
+}
+
+initBioBuzz();
 
 /* --------------------------------------------------------------------------
    FORMS, posted to Web3Forms so the visitor never leaves the site
