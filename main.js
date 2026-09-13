@@ -376,7 +376,11 @@ function showViewCount(scope) {
      the rest of the day. This skips that copy and asks every time. GoatCounter's
      own cache still sits in front of the figure, so it is minutes old rather
      than seconds, but it is no longer hours old on a returning visitor. */
-  fetch('https://' + site + '.goatcounter.com/counter/TOTAL.json', { cache: 'no-store' })
+  /* start is not optional, however much it looks like it. Ask for TOTAL with
+     no range and GoatCounter answers 0 rather than the all time figure, so the
+     footer reads "0 views" on a site that has views. Any date before counting
+     began gives the real number; this is the day the counter went in. */
+  fetch('https://' + site + '.goatcounter.com/counter/TOTAL.json?start=2026-09-13', { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
     .then(function (d) {
       /* count is pageviews, count_unique is people. The label says views, so
