@@ -343,8 +343,6 @@ that has only been escaped.
 
 ## Before this goes live
 
-- [ ] **Swap the donate URL on `sponsors.html`.** It currently points at the
-      enquiry form and is marked as a placeholder on the page itself.
 - [ ] Point the Web3Forms key at the team address. It currently delivers to a
       personal inbox for testing. The public facing address is
       `fractal.fusion27188@gmail.com`.
