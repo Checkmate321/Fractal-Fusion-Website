@@ -16,5 +16,11 @@
     "logo": "files/logos/geneHaasLogo.svg",
     "url": "https://www.ghaasfoundation.org",
     "note": "Funds manufacturing and STEM education across FIRST, putting real tools in the hands of student teams."
+  },
+  {
+    "name": "Fabworks",
+    "logo": "files/logos/fabworksLogo.svg",
+    "url": "https://www.fabworks.com",
+    "note": "Online sheet metal and laser cutting, quoted straight from a CAD file. Code FTC27188 takes 5% off a Fabworks order."
   }
 ]
