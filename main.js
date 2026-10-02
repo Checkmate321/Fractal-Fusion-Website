@@ -292,28 +292,48 @@ startKickoff();
 
 /* ==========================================================================
    EXTERNAL LINKS
-   Anything pointing off this host opens in a new tab. Swept here rather than
-   set by hand so the pages still being written, and the donate URL when it
-   lands, cannot forget. An explicit target in the markup always wins.
+   Anything pointing off fractalfusion.tech opens in a new tab. Swept here
+   rather than set by hand so the pages still being written cannot forget. An
+   explicit target in the markup always wins.
+
+   The sweep marks what is on the page when it runs; the click listener below
+   catches the rest, so a link drawn later from JSON (sponsor tiles, log
+   entries) behaves the same without each renderer having to remember.
    ========================================================================== */
+
+/* Our own addresses: the domain, its www form, the GitHub Pages address it
+   sits in front of, and whatever host this is served from (localhost while
+   testing). A link to any of these stays in the tab. */
+var OWN_HOSTS = ['fractalfusion.tech', 'www.fractalfusion.tech', 'checkmate321.github.io'];
+
+function isExternal(a) {
+  var url;
+  try { url = new URL(a.getAttribute('href'), location.href); }
+  catch (e) { return false; }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;  /* mailto:, tel: */
+  if (url.host === location.host) return false;
+  return OWN_HOSTS.indexOf(url.hostname) === -1;
+}
+
+function openInNewTab(a) {
+  if (a.target) return;                       /* the author already chose */
+  if (!isExternal(a)) return;
+  a.target = '_blank';
+  if (!a.rel) a.rel = 'noopener';
+}
 
 function markExternalLinks(root) {
   var links = (root || document).querySelectorAll('a[href]');
-
-  for (var i = 0; i < links.length; i++) {
-    var a = links[i];
-    if (a.target) continue;                    /* the author already chose */
-
-    var url = new URL(a.getAttribute('href'), location.href);
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') continue;   /* mailto:, tel: */
-    if (url.host === location.host) continue;  /* our own pages */
-
-    a.target = '_blank';
-    if (!a.rel) a.rel = 'noopener';
-  }
+  for (var i = 0; i < links.length; i++) openInNewTab(links[i]);
 }
 
 markExternalLinks();
+
+/* Capture phase, so the target is set before the browser follows the link. */
+document.addEventListener('click', function (e) {
+  var a = e.target.closest && e.target.closest('a[href]');
+  if (a) openInNewTab(a);
+}, true);
 
 
 /* --------------------------------------------------------------------------
